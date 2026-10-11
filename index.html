@@ -1,0 +1,1397 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stamp — Lightning-Fast Batch Watermarking</title>
+    <meta name="description" content="Lightning-fast client-side batch watermarking studio for logo branding">
+    <meta property="og:title" content="Stamp — Lightning-Fast Batch Watermarking">
+    <meta property="og:description" content="Lightning-fast client-side batch watermarking studio for logo branding">
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- JSZip for instant batch archiving -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Google Fonts: Plus Jakarta Sans, DM Sans, JetBrains Mono, Cinzel, Oswald -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500;600&family=Oswald:wght@500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', '"DM Sans"', 'sans-serif'],
+                        mono: ['"JetBrains Mono"', 'monospace'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#eef2ff',
+                            100: '#e0e7ff',
+                            500: '#6366f1',
+                            600: '#4f46e5',
+                            700: '#4338ca',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        :root {
+            --bg-base: #090d16;
+            --surface-panel: #0f172a;
+            --surface-elevated: #151f34;
+            --border-subtle: #1e293b;
+        }
+        body {
+            background-color: var(--bg-base);
+            color: #f1f5f9;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            overflow: hidden;
+            user-select: none;
+        }
+        /* Sleek scrollbar */
+        ::-webkit-scrollbar {
+            width: 5px;
+            height: 5px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #090d16;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #1e293b;
+            border-radius: 9999px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #334155;
+        }
+        /* Checkered grid for transparency */
+        .checkered-grid {
+            background-color: #0b0f19;
+            background-image: 
+                linear-gradient(45deg, #111827 25%, transparent 25%), 
+                linear-gradient(-45deg, #111827 25%, transparent 25%), 
+                linear-gradient(45deg, transparent 75%, #111827 75%), 
+                linear-gradient(-45deg, transparent 75%, #111827 75%);
+            background-size: 16px 16px;
+            background-position: 0 0, 0 8px, 8px -8px, -8px 0px;
+        }
+        .canvas-drag-active {
+            cursor: grabbing !important;
+        }
+        .canvas-hover-wm {
+            cursor: grab;
+        }
+    </style>
+</head>
+<body class="h-screen w-screen flex flex-col justify-between selection:bg-indigo-500 selection:text-white">
+
+    <!-- Top Bar Contract: 3 Zones -->
+    <header class="h-14 border-b border-slate-800/80 bg-slate-950/70 backdrop-blur-md px-5 sm:px-6 flex items-center justify-between gap-4 shrink-0 z-30">
+        <!-- Zone 1: Wordmark -->
+        <div class="flex items-center space-x-3 shrink-0">
+            <div class="w-8 h-8 rounded-xl bg-gradient-to-tr from-indigo-600 to-violet-500 flex items-center justify-center text-white shadow-lg shadow-indigo-500/25">
+                <i data-lucide="stamp" class="w-4 h-4"></i>
+            </div>
+            <div class="flex items-baseline gap-2">
+                <span class="font-bold text-sm tracking-tight text-white">Stamp Studio</span>
+                <span class="hidden sm:inline text-xs text-slate-500 font-medium">Local Batch Suite</span>
+            </div>
+        </div>
+
+        <!-- Zone 2: Navigation / Trust indicators (Zero Pills) -->
+        <div class="hidden md:flex items-center gap-2 text-xs text-slate-400 font-medium">
+            <span class="flex items-center gap-1.5 text-emerald-400">
+                <i data-lucide="shield-check" class="w-3.5 h-3.5"></i> 100% Client-Side
+            </span>
+            <span class="text-slate-600" aria-hidden="true">·</span>
+            <span>Zero Cloud Uploads</span>
+            <span class="text-slate-600" aria-hidden="true">·</span>
+            <span>Offline Ready</span>
+            <span class="text-slate-600" aria-hidden="true">·</span>
+            <span class="text-indigo-400 flex items-center gap-1" title="Arrow keys navigate, 1-9 snaps position">
+                <i data-lucide="keyboard" class="w-3.5 h-3.5"></i> Hotkeys Enabled
+            </span>
+        </div>
+
+        <!-- Zone 3: Actions -->
+        <div class="flex items-center space-x-3 shrink-0">
+            <button id="resetDefaultsBtn" class="text-xs text-slate-400 hover:text-slate-200 transition px-2.5 py-1.5 rounded-lg hover:bg-slate-900 border border-transparent hover:border-slate-800" title="Reset settings to defaults">
+                Reset
+            </button>
+            <a href="https://cash.app/$static9072" target="_blank" rel="noopener noreferrer" class="flex items-center gap-1.5 text-xs font-semibold text-emerald-400 hover:text-emerald-300 bg-emerald-500/10 border border-emerald-500/20 px-3 py-1.5 rounded-full transition shadow-sm">
+                <i data-lucide="heart" class="w-3.5 h-3.5 fill-emerald-400/20"></i> Donate: $static9072
+            </a>
+        </div>
+    </header>
+
+    <!-- Main Workspace -->
+    <main class="flex-1 flex flex-col lg:flex-row overflow-hidden p-3 sm:p-4 lg:p-5 gap-4">
+        
+        <!-- Left Sidebar: Controls & Settings -->
+        <aside class="w-full lg:w-80 flex flex-col gap-3.5 shrink-0 overflow-y-auto pr-0.5">
+            
+            <!-- Card 1: Watermark Mode Selector & Content -->
+            <div class="bg-slate-900/70 border border-slate-800/80 rounded-2xl p-4 shadow-xl">
+                <!-- Mode Switcher Tabs -->
+                <div class="flex items-center justify-between mb-3">
+                    <span class="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
+                        <span class="w-5 h-5 rounded-full bg-indigo-500/20 text-indigo-400 flex items-center justify-center font-bold text-[10px]">1</span> 
+                        Watermark Type
+                    </span>
+                    <div class="flex p-0.5 bg-slate-950/80 rounded-lg border border-slate-800/80">
+                        <button id="tabLogoMode" class="px-2.5 py-1 text-xs font-semibold rounded-md transition bg-indigo-600 text-white shadow-sm flex items-center gap-1">
+                            <i data-lucide="image" class="w-3 h-3"></i> Logo
+                        </button>
+                        <button id="tabTextMode" class="px-2.5 py-1 text-xs font-semibold rounded-md transition text-slate-400 hover:text-slate-200 flex items-center gap-1">
+                            <i data-lucide="type" class="w-3 h-3"></i> Text
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Logo Mode Content -->
+                <div id="logoModeContainer" class="space-y-3">
+                    <input type="file" id="logoInput" accept="image/*" class="hidden">
+                    <label for="logoInput" class="group relative w-full h-24 checkered-grid rounded-xl border border-slate-800 hover:border-indigo-500/50 flex flex-col items-center justify-center cursor-pointer transition overflow-hidden">
+                        <div id="logoPlaceholder" class="flex flex-col items-center p-2 text-center">
+                            <i data-lucide="upload" class="w-5 h-5 text-slate-400 group-hover:text-indigo-400 transition mb-1"></i>
+                            <span class="text-xs font-medium text-slate-300">Drop Logo (PNG / SVG)</span>
+                            <span class="text-[10px] text-slate-500">Auto-saved to browser</span>
+                        </div>
+                        <div id="logoPreviewWrapper" class="hidden absolute inset-0 w-full h-full flex items-center justify-center p-2 bg-slate-950/40 backdrop-blur-[2px]">
+                            <img id="logoPreviewImg" class="max-h-full max-w-full object-contain filter drop-shadow-md" alt="Stored Logo">
+                            <div class="absolute inset-0 bg-slate-950/60 opacity-0 group-hover:opacity-100 transition flex items-center justify-center text-xs font-medium text-white gap-1">
+                                <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i> Change Logo
+                            </div>
+                        </div>
+                    </label>
+
+                    <!-- Logo Actions / Toggles -->
+                    <div class="flex items-center justify-between text-xs pt-1">
+                        <label class="flex items-center gap-2 cursor-pointer text-slate-300 hover:text-white transition">
+                            <input type="checkbox" id="logoInvertToggle" class="w-3.5 h-3.5 accent-indigo-500 rounded cursor-pointer">
+                            <span>White Knockout (Invert)</span>
+                        </label>
+                        <button id="removeLogoBtn" class="hidden text-[11px] text-rose-400 hover:text-rose-300 transition">Remove</button>
+                    </div>
+                </div>
+
+                <!-- Text Mode Content (Hidden by default) -->
+                <div id="textModeContainer" class="hidden space-y-3">
+                    <div>
+                        <label class="block text-xs font-medium text-slate-400 mb-1">Watermark Text</label>
+                        <div class="relative">
+                            <input type="text" id="textInput" value="© CREATOR STUDIO" placeholder="e.g. © 2026 Studio" class="w-full bg-slate-950/80 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500/80 transition">
+                            <button id="insertCopyrightBtn" class="absolute right-2 top-1/2 -translate-y-1/2 px-1.5 py-0.5 text-[10px] font-mono font-bold bg-slate-800 hover:bg-slate-700 text-slate-300 rounded transition" title="Insert © symbol">
+                                +©
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <label class="block text-[11px] font-medium text-slate-400 mb-1">Typography</label>
+                            <select id="textFontSelect" class="w-full bg-slate-950/80 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-indigo-500 transition">
+                                <option value="'Plus Jakarta Sans', sans-serif">Modern Sans</option>
+                                <option value="'DM Sans', sans-serif">Clean Neutral</option>
+                                <option value="'Cinzel', serif">Luxury Serif</option>
+                                <option value="'Oswald', sans-serif">Bold Impact</option>
+                                <option value="'JetBrains Mono', monospace">Technical Mono</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-medium text-slate-400 mb-1">Style Weight</label>
+                            <select id="textStyleSelect" class="w-full bg-slate-950/80 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-indigo-500 transition">
+                                <option value="700">Bold (700)</option>
+                                <option value="500">Medium (500)</option>
+                                <option value="italic">Italic</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Color Swatches & Pill Badge Toggle -->
+                    <div class="flex items-center justify-between pt-1">
+                        <div class="flex items-center gap-1.5">
+                            <button data-color="#ffffff" class="color-btn w-5 h-5 rounded-full bg-white ring-2 ring-indigo-500 ring-offset-1 ring-offset-slate-900 transition" title="White"></button>
+                            <button data-color="#000000" class="color-btn w-5 h-5 rounded-full bg-black border border-slate-700 transition" title="Black"></button>
+                            <button data-color="#f59e0b" class="color-btn w-5 h-5 rounded-full bg-amber-500 transition" title="Warm Gold"></button>
+                            <button data-color="#6366f1" class="color-btn w-5 h-5 rounded-full bg-indigo-500 transition" title="Electric Indigo"></button>
+                        </div>
+                        <label class="flex items-center gap-1.5 text-xs text-slate-300 cursor-pointer">
+                            <input type="checkbox" id="textBadgeToggle" class="w-3.5 h-3.5 accent-indigo-500 rounded cursor-pointer">
+                            <span>Badge Pill</span>
+                        </label>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Card 2: Position & Freeform Dragging -->
+            <div class="bg-slate-900/70 border border-slate-800/80 rounded-2xl p-4 shadow-xl flex flex-col gap-3">
+                <div class="flex items-center justify-between">
+                    <span class="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
+                        <span class="w-5 h-5 rounded-full bg-indigo-500/20 text-indigo-400 flex items-center justify-center font-bold text-[10px]">2</span> 
+                        Position & Placement
+                    </span>
+                    <span id="coordBadge" class="text-[10px] font-mono text-indigo-400 font-medium">Snapped: BR</span>
+                </div>
+
+                <!-- 9-Point Anchor Grid -->
+                <div class="grid grid-cols-3 gap-1.5 p-2 bg-slate-950/70 rounded-xl border border-slate-800/80">
+                    <button data-anchor="top-left" class="anchor-btn p-2 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-400 hover:text-white transition flex justify-center items-center" title="Top-Left (1)"><i data-lucide="arrow-up-left" class="w-4 h-4"></i></button>
+                    <button data-anchor="top-center" class="anchor-btn p-2 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-400 hover:text-white transition flex justify-center items-center" title="Top-Center (2)"><i data-lucide="arrow-up" class="w-4 h-4"></i></button>
+                    <button data-anchor="top-right" class="anchor-btn p-2 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-400 hover:text-white transition flex justify-center items-center" title="Top-Right (3)"><i data-lucide="arrow-up-right" class="w-4 h-4"></i></button>
+                    
+                    <button data-anchor="center-left" class="anchor-btn p-2 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-400 hover:text-white transition flex justify-center items-center" title="Center-Left (4)"><i data-lucide="arrow-left" class="w-4 h-4"></i></button>
+                    <button data-anchor="center" class="anchor-btn p-2 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-400 hover:text-white transition flex justify-center items-center" title="Center (5)"><i data-lucide="disc" class="w-4 h-4"></i></button>
+                    <button data-anchor="center-right" class="anchor-btn p-2 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-400 hover:text-white transition flex justify-center items-center" title="Center-Right (6)"><i data-lucide="arrow-right" class="w-4 h-4"></i></button>
+                    
+                    <button data-anchor="bottom-left" class="anchor-btn p-2 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-400 hover:text-white transition flex justify-center items-center" title="Bottom-Left (7)"><i data-lucide="arrow-down-left" class="w-4 h-4"></i></button>
+                    <button data-anchor="bottom-center" class="anchor-btn p-2 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-400 hover:text-white transition flex justify-center items-center" title="Bottom-Center (8)"><i data-lucide="arrow-down" class="w-4 h-4"></i></button>
+                    <button data-anchor="bottom-right" class="anchor-btn p-2 rounded-lg bg-indigo-600 text-white border-indigo-500 transition flex justify-center items-center shadow-md" title="Bottom-Right (9)"><i data-lucide="arrow-down-right" class="w-4 h-4"></i></button>
+                </div>
+
+                <div class="flex items-center justify-between text-[11px] text-slate-400 px-1">
+                    <span class="flex items-center gap-1"><i data-lucide="move" class="w-3 h-3 text-indigo-400"></i> Drag freely on preview</span>
+                    <button id="resetSnapBtn" class="hidden text-indigo-400 hover:text-indigo-300 font-medium transition">Re-snap Grid</button>
+                </div>
+
+                <!-- Margin Inset Slider -->
+                <div class="space-y-1 pt-1">
+                    <div class="flex justify-between text-xs">
+                        <label class="text-slate-300 font-medium">Edge Inset Margin</label>
+                        <span id="marginVal" class="text-indigo-400 font-mono font-semibold">3%</span>
+                    </div>
+                    <input type="range" id="marginSlider" min="1" max="12" value="3" class="w-full accent-indigo-500 bg-slate-950 h-1.5 rounded-lg cursor-pointer">
+                </div>
+            </div>
+
+            <!-- Card 3: Scale, Opacity & Contrast -->
+            <div class="bg-slate-900/70 border border-slate-800/80 rounded-2xl p-4 shadow-xl flex flex-col gap-3.5 flex-1">
+                <span class="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
+                    <span class="w-5 h-5 rounded-full bg-indigo-500/20 text-indigo-400 flex items-center justify-center font-bold text-[10px]">3</span> 
+                    Scale & Appearance
+                </span>
+
+                <div class="space-y-3">
+                    <div class="space-y-1">
+                        <div class="flex justify-between text-xs">
+                            <label class="text-slate-300 font-medium">Watermark Size Scale</label>
+                            <span id="scaleVal" class="text-indigo-400 font-mono font-semibold">18%</span>
+                        </div>
+                        <input type="range" id="scaleSlider" min="5" max="50" value="18" class="w-full accent-indigo-500 bg-slate-950 h-1.5 rounded-lg cursor-pointer">
+                    </div>
+
+                    <div class="space-y-1">
+                        <div class="flex justify-between text-xs">
+                            <label class="text-slate-300 font-medium">Watermark Opacity</label>
+                            <span id="opacityVal" class="text-indigo-400 font-mono font-semibold">90%</span>
+                        </div>
+                        <input type="range" id="opacitySlider" min="15" max="100" value="90" class="w-full accent-indigo-500 bg-slate-950 h-1.5 rounded-lg cursor-pointer">
+                    </div>
+                </div>
+
+                <!-- Drop Shadow Contrast -->
+                <div class="flex items-center justify-between p-2.5 bg-slate-950/70 rounded-xl border border-slate-800/80 mt-auto">
+                    <div class="flex flex-col">
+                        <span class="text-xs font-medium text-slate-200">High-Contrast Drop Shadow</span>
+                        <span class="text-[10px] text-slate-400">Guarantees legibility on busy photos</span>
+                    </div>
+                    <input type="checkbox" id="shadowToggle" checked class="w-4 h-4 accent-indigo-500 rounded cursor-pointer">
+                </div>
+            </div>
+
+        </aside>
+
+        <!-- Right / Center Viewport: Interactive Canvas & Batch Queue -->
+        <section class="flex-1 flex flex-col gap-3.5 overflow-hidden">
+            
+            <!-- Live Preview Canvas Viewport -->
+            <div id="canvasViewport" class="flex-1 checkered-grid rounded-2xl border border-slate-800/80 relative flex items-center justify-center overflow-hidden shadow-2xl p-2">
+                <canvas id="previewCanvas" class="max-w-full max-h-full rounded-lg shadow-2xl transition-all border border-slate-800/40 touch-none"></canvas>
+                
+                <!-- Zero Photos Initial State Overlay -->
+                <div id="noPhotosOverlay" class="absolute inset-0 flex flex-col items-center justify-center bg-slate-950/85 backdrop-blur-md z-10 p-6 text-center">
+                    <div class="w-16 h-16 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400 mb-4 shadow-xl">
+                        <i data-lucide="images" class="w-8 h-8"></i>
+                    </div>
+                    <h2 class="text-xl font-bold text-white mb-1.5">Drop Your Photos Here</h2>
+                    <p class="text-xs text-slate-400 max-w-md mb-6">Drag and drop a batch of photos (JPG, PNG, WebP) to instantly preview, position your watermark, and batch export.</p>
+                    <input type="file" id="photoInput" accept="image/*" multiple class="hidden">
+                    <label for="photoInput" class="px-6 py-3 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold rounded-xl shadow-lg shadow-indigo-600/30 cursor-pointer transition flex items-center gap-2">
+                        <i data-lucide="folder-open" class="w-4 h-4"></i> Select Photos (Batch)
+                    </label>
+                    <span class="text-[11px] text-slate-500 mt-3 font-medium">Or paste/drop files anywhere on this window</span>
+                </div>
+
+                <!-- Floating Canvas Zoom & Info Bar -->
+                <div id="canvasInfoBar" class="hidden absolute top-4 left-4 z-20 flex items-center gap-2 bg-slate-950/80 backdrop-blur-md border border-slate-800/80 rounded-xl px-3 py-1.5 text-[11px] text-slate-300 shadow-lg">
+                    <span id="canvasDims" class="font-mono tabular-nums text-slate-400">1920 × 1080</span>
+                    <span class="text-slate-600">·</span>
+                    <span id="activePhotoName" class="font-medium text-slate-200 truncate max-w-[180px]">photo.jpg</span>
+                    <span class="text-slate-600">·</span>
+                    <span class="text-indigo-400 flex items-center gap-1"><i data-lucide="move" class="w-3 h-3"></i> Drag to reposition</span>
+                </div>
+            </div>
+
+            <!-- Bottom Action & Photo Queue Drawer -->
+            <div class="bg-slate-900/70 border border-slate-800/80 rounded-2xl p-3.5 sm:p-4 flex flex-col xl:flex-row items-center justify-between gap-4 shadow-xl shrink-0">
+                
+                <!-- Queue Stats & Thumbnails Carousel -->
+                <div class="flex items-center space-x-3 w-full xl:w-auto overflow-hidden">
+                    <div class="shrink-0 flex flex-col">
+                        <span class="text-xs font-bold text-white flex items-center gap-1.5">
+                            Batch Queue
+                        </span>
+                        <span id="photoCountLabel" class="text-[11px] text-slate-400 font-mono tabular-nums">0 photos ready</span>
+                    </div>
+
+                    <div class="h-8 w-px bg-slate-800 shrink-0"></div>
+
+                    <!-- Horizontal Thumbnails Slider -->
+                    <div id="thumbnailContainer" class="flex items-center space-x-2 overflow-x-auto py-1 max-w-xs sm:max-w-md lg:max-w-lg">
+                        <!-- Dynamic Thumbnails Render Here -->
+                    </div>
+
+                    <div class="flex items-center gap-1 shrink-0">
+                        <input type="file" id="photoInputAdditional" accept="image/*" multiple class="hidden">
+                        <label for="photoInputAdditional" id="addMoreBtn" class="hidden px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold rounded-lg cursor-pointer transition items-center gap-1 border border-slate-700" title="Add more photos">
+                            <i data-lucide="plus" class="w-3.5 h-3.5"></i> Add
+                        </label>
+                        <button id="clearPhotosBtn" class="hidden text-slate-400 hover:text-rose-400 p-2 transition text-xs font-medium rounded-lg hover:bg-slate-800" title="Clear all photos">
+                            <i data-lucide="trash-2" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Export Settings & Action Button -->
+                <div class="w-full xl:w-auto shrink-0 flex flex-wrap items-center justify-end gap-2.5">
+                    
+                    <!-- Format Selector -->
+                    <div class="flex items-center bg-slate-950/80 border border-slate-800 rounded-xl p-1 text-xs">
+                        <button data-format="image/jpeg" class="export-format-btn px-2.5 py-1 font-semibold rounded-lg transition bg-indigo-600 text-white shadow-sm">JPG</button>
+                        <button data-format="image/webp" class="export-format-btn px-2.5 py-1 font-semibold rounded-lg transition text-slate-400 hover:text-white">WebP</button>
+                        <button data-format="image/png" class="export-format-btn px-2.5 py-1 font-semibold rounded-lg transition text-slate-400 hover:text-white">PNG</button>
+                    </div>
+
+                    <!-- Quality Slider / Percentage -->
+                    <div id="qualityWrapper" class="hidden sm:flex items-center gap-1.5 bg-slate-950/80 border border-slate-800 rounded-xl px-2.5 py-1 text-xs">
+                        <span class="text-slate-400 text-[11px]">Quality:</span>
+                        <input type="range" id="qualitySlider" min="50" max="100" value="90" class="w-16 accent-indigo-500 bg-slate-900 h-1.5 rounded cursor-pointer">
+                        <span id="qualityVal" class="text-indigo-400 font-mono text-[11px] font-semibold w-7 text-right">90%</span>
+                    </div>
+
+                    <!-- Custom Filename Pattern -->
+                    <div class="hidden md:flex items-center bg-slate-950/80 border border-slate-800 rounded-xl px-2.5 py-1 text-xs">
+                        <span class="text-slate-400 text-[11px] mr-1">Prefix/Pattern:</span>
+                        <input type="text" id="namingPatternInput" value="{name}_stamped" class="bg-transparent text-slate-200 text-xs w-28 focus:outline-none font-mono">
+                    </div>
+
+                    <!-- Process & Export Button -->
+                    <button id="exportZipBtn" disabled class="w-full sm:w-auto px-6 py-2.5 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 disabled:opacity-40 disabled:cursor-not-allowed text-white text-xs font-bold rounded-xl shadow-xl shadow-indigo-600/25 transition flex items-center justify-center gap-2">
+                        <i data-lucide="download-cloud" class="w-4 h-4"></i> <span id="exportBtnLabel">Process & Download All (ZIP)</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Export Progress Overlay (Appears during batch ZIP compilation) -->
+            <div id="exportProgressModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-md">
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 max-w-sm w-full mx-4 shadow-2xl flex flex-col items-center text-center">
+                    <div class="w-12 h-12 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400 mb-3 shadow-lg">
+                        <i data-lucide="loader-2" class="w-6 h-6 animate-spin"></i>
+                    </div>
+                    <h3 class="text-sm font-bold text-white mb-1">Watermarking Batch in Progress</h3>
+                    <p id="progressStatusText" class="text-xs text-slate-400 mb-4 font-mono">Processing 0 / 0 images...</p>
+                    
+                    <div class="w-full bg-slate-950 h-2 rounded-full overflow-hidden border border-slate-800 mb-3">
+                        <div id="progressBarFill" class="bg-gradient-to-r from-indigo-500 to-violet-500 h-full w-0 transition-all duration-150"></div>
+                    </div>
+                    <span class="text-[11px] text-slate-500">100% Client-Side Canvas Render · Fast & Private</span>
+                </div>
+            </div>
+
+        </section>
+
+    </main>
+
+    <!-- JavaScript Application Logic -->
+    <script>
+        // --- Application State ---
+        const state = {
+            photos: [],            // Array of File objects
+            photoUrls: [],         // Object URLs for image previews
+            selectedIndex: 0,      // Active preview index
+            
+            // Watermark Mode: 'logo' or 'text'
+            watermarkType: 'logo',
+            logoImage: null,       // Loaded HTMLImageElement for logo
+            logoInvert: false,     // Invert logo to pure white knockout
+            
+            // Text Watermark Configuration
+            textContent: '© CREATOR STUDIO',
+            textFont: "'Plus Jakarta Sans', sans-serif",
+            textWeight: '700',
+            textColor: '#ffffff',
+            textBadge: false,
+
+            // Placement & Geometry
+            anchor: 'bottom-right',// 9-point anchor snap or 'custom'
+            customPos: null,       // { xPercent: 0.85, yPercent: 0.90 } when dragged freely
+            margin: 3,             // Edge margin % (1% - 12%)
+            scale: 18,             // Scale percentage (5% - 50%)
+            opacity: 90,           // Opacity percentage (15% - 100%)
+            dropShadow: true,      // High contrast drop shadow
+
+            // Export Settings
+            exportFormat: 'image/jpeg',
+            exportQuality: 0.90,
+            namingPattern: '{name}_stamped'
+        };
+
+        // Hit-test and dragging tracker
+        let watermarkBounds = null; // { x, y, width, height, canvasW, canvasH }
+        let isDraggingWatermark = false;
+        let dragOffset = { x: 0, y: 0 };
+
+        // --- DOM Elements ---
+        const logoInput = document.getElementById('logoInput');
+        const logoPlaceholder = document.getElementById('logoPlaceholder');
+        const logoPreviewWrapper = document.getElementById('logoPreviewWrapper');
+        const logoPreviewImg = document.getElementById('logoPreviewImg');
+        const removeLogoBtn = document.getElementById('removeLogoBtn');
+        const logoInvertToggle = document.getElementById('logoInvertToggle');
+
+        // Mode switch tabs
+        const tabLogoMode = document.getElementById('tabLogoMode');
+        const tabTextMode = document.getElementById('tabTextMode');
+        const logoModeContainer = document.getElementById('logoModeContainer');
+        const textModeContainer = document.getElementById('textModeContainer');
+
+        // Text controls
+        const textInput = document.getElementById('textInput');
+        const insertCopyrightBtn = document.getElementById('insertCopyrightBtn');
+        const textFontSelect = document.getElementById('textFontSelect');
+        const textStyleSelect = document.getElementById('textStyleSelect');
+        const textBadgeToggle = document.getElementById('textBadgeToggle');
+
+        // Placement & Sliders
+        const coordBadge = document.getElementById('coordBadge');
+        const resetSnapBtn = document.getElementById('resetSnapBtn');
+        const marginSlider = document.getElementById('marginSlider');
+        const marginVal = document.getElementById('marginVal');
+        const scaleSlider = document.getElementById('scaleSlider');
+        const scaleVal = document.getElementById('scaleVal');
+        const opacitySlider = document.getElementById('opacitySlider');
+        const opacityVal = document.getElementById('opacityVal');
+        const shadowToggle = document.getElementById('shadowToggle');
+
+        // Canvas & Viewport
+        const previewCanvas = document.getElementById('previewCanvas');
+        const ctx = previewCanvas.getContext('2d');
+        const noPhotosOverlay = document.getElementById('noPhotosOverlay');
+        const canvasInfoBar = document.getElementById('canvasInfoBar');
+        const canvasDims = document.getElementById('canvasDims');
+        const activePhotoName = document.getElementById('activePhotoName');
+
+        // Photos queue
+        const photoInput = document.getElementById('photoInput');
+        const photoInputAdditional = document.getElementById('photoInputAdditional');
+        const thumbnailContainer = document.getElementById('thumbnailContainer');
+        const photoCountLabel = document.getElementById('photoCountLabel');
+        const clearPhotosBtn = document.getElementById('clearPhotosBtn');
+        const addMoreBtn = document.getElementById('addMoreBtn');
+
+        // Export controls
+        const qualitySlider = document.getElementById('qualitySlider');
+        const qualityVal = document.getElementById('qualityVal');
+        const qualityWrapper = document.getElementById('qualityWrapper');
+        const namingPatternInput = document.getElementById('namingPatternInput');
+        const exportZipBtn = document.getElementById('exportZipBtn');
+        const exportBtnLabel = document.getElementById('exportBtnLabel');
+        const exportProgressModal = document.getElementById('exportProgressModal');
+        const progressStatusText = document.getElementById('progressStatusText');
+        const progressBarFill = document.getElementById('progressBarFill');
+        const resetDefaultsBtn = document.getElementById('resetDefaultsBtn');
+
+        // Boot
+        window.addEventListener('DOMContentLoaded', () => {
+            lucide.createIcons();
+            loadStoredPreferences();
+            setupEventListeners();
+            setupCanvasInteraction();
+            setupDragAndDrop();
+        });
+
+        // --- Persistent Preferences (LocalStorage) ---
+        function loadStoredPreferences() {
+            // Restore Watermark Mode
+            const savedType = localStorage.getItem('stamp_wm_type');
+            if (savedType === 'text') {
+                setWatermarkMode('text');
+            } else {
+                setWatermarkMode('logo');
+            }
+
+            // Restore Text configs
+            const savedText = localStorage.getItem('stamp_text_content');
+            if (savedText) {
+                state.textContent = savedText;
+                textInput.value = savedText;
+            }
+            const savedFont = localStorage.getItem('stamp_text_font');
+            if (savedFont) {
+                state.textFont = savedFont;
+                textFontSelect.value = savedFont;
+            }
+            const savedWeight = localStorage.getItem('stamp_text_weight');
+            if (savedWeight) {
+                state.textWeight = savedWeight;
+                textStyleSelect.value = savedWeight;
+            }
+            const savedColor = localStorage.getItem('stamp_text_color');
+            if (savedColor) {
+                state.textColor = savedColor;
+                updateColorButtons(savedColor);
+            }
+            const savedBadge = localStorage.getItem('stamp_text_badge');
+            if (savedBadge !== null) {
+                state.textBadge = savedBadge === 'true';
+                textBadgeToggle.checked = state.textBadge;
+            }
+
+            // Restore Logo
+            const storedBase64 = localStorage.getItem('stamp_persistent_logo');
+            const savedInvert = localStorage.getItem('stamp_logo_invert');
+            if (savedInvert !== null) {
+                state.logoInvert = savedInvert === 'true';
+                logoInvertToggle.checked = state.logoInvert;
+            }
+
+            if (storedBase64) {
+                const img = new Image();
+                img.onload = () => {
+                    state.logoImage = img;
+                    logoPreviewImg.src = storedBase64;
+                    logoPlaceholder.classList.add('hidden');
+                    logoPreviewWrapper.classList.remove('hidden');
+                    removeLogoBtn.classList.remove('hidden');
+                    renderPreview();
+                };
+                img.src = storedBase64;
+            } else {
+                createDefaultLogo();
+            }
+
+            // Restore Geometry & Sliders
+            const savedScale = localStorage.getItem('stamp_scale');
+            if (savedScale) {
+                state.scale = parseInt(savedScale);
+                scaleSlider.value = state.scale;
+                scaleVal.textContent = `${state.scale}%`;
+            }
+            const savedOpacity = localStorage.getItem('stamp_opacity');
+            if (savedOpacity) {
+                state.opacity = parseInt(savedOpacity);
+                opacitySlider.value = state.opacity;
+                opacityVal.textContent = `${state.opacity}%`;
+            }
+            const savedMargin = localStorage.getItem('stamp_margin');
+            if (savedMargin) {
+                state.margin = parseInt(savedMargin);
+                marginSlider.value = state.margin;
+                marginVal.textContent = `${state.margin}%`;
+            }
+            const savedShadow = localStorage.getItem('stamp_shadow');
+            if (savedShadow !== null) {
+                state.dropShadow = savedShadow === 'true';
+                shadowToggle.checked = state.dropShadow;
+            }
+
+            const savedAnchor = localStorage.getItem('stamp_anchor');
+            if (savedAnchor) {
+                state.anchor = savedAnchor;
+                updateAnchorUI();
+            }
+
+            const savedFormat = localStorage.getItem('stamp_export_format');
+            if (savedFormat) {
+                setExportFormat(savedFormat);
+            }
+        }
+
+        function createDefaultLogo() {
+            const canvas = document.createElement('canvas');
+            canvas.width = 500;
+            canvas.height = 120;
+            const tCtx = canvas.getContext('2d');
+            tCtx.fillStyle = '#ffffff';
+            tCtx.font = 'bold 42px "Plus Jakarta Sans", sans-serif';
+            tCtx.textAlign = 'center';
+            tCtx.textBaseline = 'middle';
+            tCtx.fillText('© CREATOR STUDIO', 250, 60);
+
+            const dataUrl = canvas.toDataURL();
+            const img = new Image();
+            img.onload = () => {
+                state.logoImage = img;
+                logoPreviewImg.src = dataUrl;
+                logoPlaceholder.classList.add('hidden');
+                logoPreviewWrapper.classList.remove('hidden');
+                renderPreview();
+            };
+            img.src = dataUrl;
+        }
+
+        // --- Event Listeners Setup ---
+        function setupEventListeners() {
+            // Mode Tabs
+            tabLogoMode.addEventListener('click', () => setWatermarkMode('logo'));
+            tabTextMode.addEventListener('click', () => setWatermarkMode('text'));
+
+            // Logo Upload & Options
+            logoInput.addEventListener('change', handleLogoUpload);
+            removeLogoBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                localStorage.removeItem('stamp_persistent_logo');
+                removeLogoBtn.classList.add('hidden');
+                createDefaultLogo();
+            });
+
+            logoInvertToggle.addEventListener('change', (e) => {
+                state.logoInvert = e.target.checked;
+                localStorage.setItem('stamp_logo_invert', state.logoInvert);
+                renderPreview();
+            });
+
+            // Text Controls
+            textInput.addEventListener('input', (e) => {
+                state.textContent = e.target.value;
+                localStorage.setItem('stamp_text_content', state.textContent);
+                renderPreview();
+            });
+
+            insertCopyrightBtn.addEventListener('click', () => {
+                textInput.value = '© ' + textInput.value.replace(/^©\s*/, '');
+                state.textContent = textInput.value;
+                localStorage.setItem('stamp_text_content', state.textContent);
+                renderPreview();
+            });
+
+            textFontSelect.addEventListener('change', (e) => {
+                state.textFont = e.target.value;
+                localStorage.setItem('stamp_text_font', state.textFont);
+                renderPreview();
+            });
+
+            textStyleSelect.addEventListener('change', (e) => {
+                state.textWeight = e.target.value;
+                localStorage.setItem('stamp_text_weight', state.textWeight);
+                renderPreview();
+            });
+
+            document.querySelectorAll('.color-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const color = e.currentTarget.getAttribute('data-color');
+                    state.textColor = color;
+                    localStorage.setItem('stamp_text_color', color);
+                    updateColorButtons(color);
+                    renderPreview();
+                });
+            });
+
+            textBadgeToggle.addEventListener('change', (e) => {
+                state.textBadge = e.target.checked;
+                localStorage.setItem('stamp_text_badge', state.textBadge);
+                renderPreview();
+            });
+
+            // Anchor selection buttons
+            document.querySelectorAll('.anchor-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const anchor = e.currentTarget.getAttribute('data-anchor');
+                    state.anchor = anchor;
+                    state.customPos = null; // Snap clears freeform
+                    localStorage.setItem('stamp_anchor', anchor);
+                    localStorage.removeItem('stamp_custom_pos');
+                    resetSnapBtn.classList.add('hidden');
+                    coordBadge.textContent = `Snapped: ${anchorAbbr(anchor)}`;
+                    updateAnchorUI();
+                    renderPreview();
+                });
+            });
+
+            resetSnapBtn.addEventListener('click', () => {
+                state.customPos = null;
+                resetSnapBtn.classList.add('hidden');
+                coordBadge.textContent = `Snapped: ${anchorAbbr(state.anchor)}`;
+                updateAnchorUI();
+                renderPreview();
+            });
+
+            // Sliders
+            marginSlider.addEventListener('input', (e) => {
+                state.margin = parseInt(e.target.value);
+                marginVal.textContent = `${state.margin}%`;
+                localStorage.setItem('stamp_margin', state.margin);
+                renderPreview();
+            });
+
+            scaleSlider.addEventListener('input', (e) => {
+                state.scale = parseInt(e.target.value);
+                scaleVal.textContent = `${state.scale}%`;
+                localStorage.setItem('stamp_scale', state.scale);
+                renderPreview();
+            });
+
+            opacitySlider.addEventListener('input', (e) => {
+                state.opacity = parseInt(e.target.value);
+                opacityVal.textContent = `${state.opacity}%`;
+                localStorage.setItem('stamp_opacity', state.opacity);
+                renderPreview();
+            });
+
+            shadowToggle.addEventListener('change', (e) => {
+                state.dropShadow = e.target.checked;
+                localStorage.setItem('stamp_shadow', state.dropShadow);
+                renderPreview();
+            });
+
+            // Photo batch uploads
+            photoInput.addEventListener('change', handlePhotoUpload);
+            photoInputAdditional.addEventListener('change', handlePhotoUpload);
+
+            // Queue Actions
+            clearPhotosBtn.addEventListener('click', clearAllPhotos);
+            exportZipBtn.addEventListener('click', processAndExportZip);
+
+            // Export format buttons
+            document.querySelectorAll('.export-format-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const fmt = e.currentTarget.getAttribute('data-format');
+                    setExportFormat(fmt);
+                });
+            });
+
+            qualitySlider.addEventListener('input', (e) => {
+                const q = parseInt(e.target.value);
+                state.exportQuality = q / 100;
+                qualityVal.textContent = `${q}%`;
+            });
+
+            namingPatternInput.addEventListener('input', (e) => {
+                state.namingPattern = e.target.value || '{name}_stamped';
+            });
+
+            resetDefaultsBtn.addEventListener('click', resetAllDefaults);
+
+            // Keyboard navigation
+            window.addEventListener('keydown', handleKeyboardShortcuts);
+        }
+
+        function setWatermarkMode(mode) {
+            state.watermarkType = mode;
+            localStorage.setItem('stamp_wm_type', mode);
+            if (mode === 'logo') {
+                tabLogoMode.classList.add('bg-indigo-600', 'text-white', 'shadow-sm');
+                tabLogoMode.classList.remove('text-slate-400');
+                tabTextMode.classList.remove('bg-indigo-600', 'text-white', 'shadow-sm');
+                tabTextMode.classList.add('text-slate-400');
+                logoModeContainer.classList.remove('hidden');
+                textModeContainer.classList.add('hidden');
+            } else {
+                tabTextMode.classList.add('bg-indigo-600', 'text-white', 'shadow-sm');
+                tabTextMode.classList.remove('text-slate-400');
+                tabLogoMode.classList.remove('bg-indigo-600', 'text-white', 'shadow-sm');
+                tabLogoMode.classList.add('text-slate-400');
+                textModeContainer.classList.remove('hidden');
+                logoModeContainer.classList.add('hidden');
+            }
+            renderPreview();
+        }
+
+        function updateColorButtons(selectedColor) {
+            document.querySelectorAll('.color-btn').forEach(b => {
+                if (b.getAttribute('data-color') === selectedColor) {
+                    b.classList.add('ring-2', 'ring-indigo-500', 'ring-offset-1', 'ring-offset-slate-900');
+                } else {
+                    b.classList.remove('ring-2', 'ring-indigo-500', 'ring-offset-1', 'ring-offset-slate-900');
+                }
+            });
+        }
+
+        function setExportFormat(fmt) {
+            state.exportFormat = fmt;
+            localStorage.setItem('stamp_export_format', fmt);
+            document.querySelectorAll('.export-format-btn').forEach(btn => {
+                if (btn.getAttribute('data-format') === fmt) {
+                    btn.classList.add('bg-indigo-600', 'text-white', 'shadow-sm');
+                    btn.classList.remove('text-slate-400');
+                } else {
+                    btn.classList.remove('bg-indigo-600', 'text-white', 'shadow-sm');
+                    btn.classList.add('text-slate-400');
+                }
+            });
+
+            if (fmt === 'image/png') {
+                qualityWrapper.classList.add('opacity-40', 'pointer-events-none');
+            } else {
+                qualityWrapper.classList.remove('opacity-40', 'pointer-events-none');
+            }
+        }
+
+        function anchorAbbr(anchor) {
+            const map = {
+                'top-left': 'TL', 'top-center': 'TC', 'top-right': 'TR',
+                'center-left': 'ML', 'center': 'C', 'center-right': 'MR',
+                'bottom-left': 'BL', 'bottom-center': 'BC', 'bottom-right': 'BR'
+            };
+            return map[anchor] || 'BR';
+        }
+
+        function handleKeyboardShortcuts(e) {
+            if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') return;
+
+            if (state.photos.length === 0) return;
+
+            if (e.key === 'ArrowRight') {
+                e.preventDefault();
+                state.selectedIndex = (state.selectedIndex + 1) % state.photos.length;
+                updateQueueUI();
+                renderPreview();
+            } else if (e.key === 'ArrowLeft') {
+                e.preventDefault();
+                state.selectedIndex = (state.selectedIndex - 1 + state.photos.length) % state.photos.length;
+                updateQueueUI();
+                renderPreview();
+            } else if (e.key >= '1' && e.key <= '9') {
+                const anchors = ['top-left', 'top-center', 'top-right', 'center-left', 'center', 'center-right', 'bottom-left', 'bottom-center', 'bottom-right'];
+                const targetAnchor = anchors[parseInt(e.key) - 1];
+                if (targetAnchor) {
+                    state.anchor = targetAnchor;
+                    state.customPos = null;
+                    resetSnapBtn.classList.add('hidden');
+                    coordBadge.textContent = `Snapped: ${anchorAbbr(targetAnchor)}`;
+                    updateAnchorUI();
+                    renderPreview();
+                }
+            } else if (e.key === 'Delete' || e.key === 'Backspace') {
+                removePhotoAt(state.selectedIndex);
+            }
+        }
+
+        function resetAllDefaults() {
+            state.scale = 18;
+            state.opacity = 90;
+            state.margin = 3;
+            state.dropShadow = true;
+            state.anchor = 'bottom-right';
+            state.customPos = null;
+            state.logoInvert = false;
+            logoInvertToggle.checked = false;
+
+            scaleSlider.value = 18;
+            scaleVal.textContent = '18%';
+            opacitySlider.value = 90;
+            opacityVal.textContent = '90%';
+            marginSlider.value = 3;
+            marginVal.textContent = '3%';
+            shadowToggle.checked = true;
+            resetSnapBtn.classList.add('hidden');
+            coordBadge.textContent = 'Snapped: BR';
+
+            updateAnchorUI();
+            renderPreview();
+        }
+
+        // --- Drag and Drop Handling (Global) ---
+        function setupDragAndDrop() {
+            window.addEventListener('dragover', (e) => e.preventDefault());
+            window.addEventListener('drop', (e) => e.preventDefault());
+
+            window.addEventListener('drop', (e) => {
+                const files = Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('image/'));
+                if (files.length > 0) {
+                    addPhotosToQueue(files);
+                }
+            });
+
+            window.addEventListener('paste', (e) => {
+                const items = (e.clipboardData || e.originalEvent.clipboardData).items;
+                const files = [];
+                for (let index in items) {
+                    const item = items[index];
+                    if (item.kind === 'file' && item.type.startsWith('image/')) {
+                        files.push(item.getAsFile());
+                    }
+                }
+                if (files.length > 0) {
+                    addPhotosToQueue(files);
+                }
+            });
+        }
+
+        function handleLogoUpload(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                const base64 = event.target.result;
+                localStorage.setItem('stamp_persistent_logo', base64);
+                
+                const img = new Image();
+                img.onload = () => {
+                    state.logoImage = img;
+                    logoPreviewImg.src = base64;
+                    logoPlaceholder.classList.add('hidden');
+                    logoPreviewWrapper.classList.remove('hidden');
+                    removeLogoBtn.classList.remove('hidden');
+                    renderPreview();
+                };
+                img.src = base64;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function handlePhotoUpload(e) {
+            const files = Array.from(e.target.files);
+            if (files.length > 0) {
+                addPhotosToQueue(files);
+            }
+            e.target.value = ''; // reset so same files can be re-added
+        }
+
+        function addPhotosToQueue(files) {
+            files.forEach(file => {
+                state.photos.push(file);
+                state.photoUrls.push(URL.createObjectURL(file));
+            });
+
+            if (state.photos.length > 0) {
+                noPhotosOverlay.classList.add('hidden');
+                clearPhotosBtn.classList.remove('hidden');
+                addMoreBtn.classList.remove('hidden');
+                canvasInfoBar.classList.remove('hidden');
+                exportZipBtn.disabled = false;
+            }
+
+            updateQueueUI();
+            renderPreview();
+        }
+
+        function updateQueueUI() {
+            const total = state.photos.length;
+            photoCountLabel.textContent = `${total} photo${total === 1 ? '' : 's'} ready`;
+            exportBtnLabel.textContent = total > 1 ? 'Process & Download All (ZIP)' : 'Process & Download Photo';
+
+            thumbnailContainer.innerHTML = '';
+
+            state.photoUrls.forEach((url, idx) => {
+                const thumb = document.createElement('div');
+                thumb.className = `group relative w-12 h-12 rounded-lg overflow-hidden border-2 cursor-pointer shrink-0 transition ${idx === state.selectedIndex ? 'border-indigo-500 scale-105 shadow-md ring-1 ring-indigo-500' : 'border-slate-800 opacity-60 hover:opacity-100'}`;
+                
+                const img = document.createElement('img');
+                img.src = url;
+                img.className = 'w-full h-full object-cover';
+
+                // Delete individual thumbnail button
+                const delBtn = document.createElement('button');
+                delBtn.className = 'absolute top-0 right-0 p-1 bg-slate-950/80 text-slate-400 hover:text-rose-400 rounded-bl transition opacity-0 group-hover:opacity-100';
+                delBtn.innerHTML = '✕';
+                delBtn.style.fontSize = '8px';
+                delBtn.onclick = (e) => {
+                    e.stopPropagation();
+                    removePhotoAt(idx);
+                };
+
+                thumb.appendChild(img);
+                thumb.appendChild(delBtn);
+
+                thumb.onclick = () => {
+                    state.selectedIndex = idx;
+                    updateQueueUI();
+                    renderPreview();
+                };
+
+                thumbnailContainer.appendChild(thumb);
+            });
+        }
+
+        function removePhotoAt(index) {
+            if (state.photos.length === 0) return;
+            URL.revokeObjectURL(state.photoUrls[index]);
+            state.photos.splice(index, 1);
+            state.photoUrls.splice(index, 1);
+
+            if (state.photos.length === 0) {
+                clearAllPhotos();
+            } else {
+                if (state.selectedIndex >= state.photos.length) {
+                    state.selectedIndex = state.photos.length - 1;
+                }
+                updateQueueUI();
+                renderPreview();
+            }
+        }
+
+        function clearAllPhotos() {
+            state.photoUrls.forEach(url => URL.revokeObjectURL(url));
+            state.photos = [];
+            state.photoUrls = [];
+            state.selectedIndex = 0;
+            noPhotosOverlay.classList.remove('hidden');
+            clearPhotosBtn.classList.add('hidden');
+            addMoreBtn.classList.add('hidden');
+            canvasInfoBar.classList.add('hidden');
+            exportZipBtn.disabled = true;
+            photoCountLabel.textContent = '0 photos ready';
+            thumbnailContainer.innerHTML = '';
+            ctx.clearRect(0, 0, previewCanvas.width, previewCanvas.height);
+        }
+
+        function updateAnchorUI() {
+            document.querySelectorAll('.anchor-btn').forEach(btn => {
+                if (btn.getAttribute('data-anchor') === state.anchor && !state.customPos) {
+                    btn.classList.add('bg-indigo-600', 'text-white', 'border-indigo-500', 'shadow-md');
+                    btn.classList.remove('bg-slate-900', 'text-slate-400');
+                } else {
+                    btn.classList.remove('bg-indigo-600', 'text-white', 'border-indigo-500', 'shadow-md');
+                    btn.classList.add('bg-slate-900', 'text-slate-400');
+                }
+            });
+        }
+
+        // --- Interactive Canvas Drag Hit-Testing ---
+        function setupCanvasInteraction() {
+            function getCanvasCoordinates(e) {
+                const rect = previewCanvas.getBoundingClientRect();
+                const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+                
+                // Map CSS client coordinate to canvas internal pixels
+                const scaleX = previewCanvas.width / rect.width;
+                const scaleY = previewCanvas.height / rect.height;
+
+                return {
+                    x: (clientX - rect.left) * scaleX,
+                    y: (clientY - rect.top) * scaleY
+                };
+            }
+
+            function isInsideWatermark(pt) {
+                if (!watermarkBounds) return false;
+                // Add generous 15px hit margin
+                const pad = 15;
+                return (
+                    pt.x >= watermarkBounds.x - pad &&
+                    pt.x <= watermarkBounds.x + watermarkBounds.width + pad &&
+                    pt.y >= watermarkBounds.y - pad &&
+                    pt.y <= watermarkBounds.y + watermarkBounds.height + pad
+                );
+            }
+
+            // Mouse / Touch Start
+            function onPointerDown(e) {
+                if (state.photos.length === 0 || !watermarkBounds) return;
+                const pt = getCanvasCoordinates(e);
+
+                if (isInsideWatermark(pt)) {
+                    isDraggingWatermark = true;
+                    previewCanvas.classList.add('canvas-drag-active');
+                    dragOffset.x = pt.x - watermarkBounds.x;
+                    dragOffset.y = pt.y - watermarkBounds.y;
+                }
+            }
+
+            // Pointer Move
+            function onPointerMove(e) {
+                if (state.photos.length === 0 || !watermarkBounds) return;
+                const pt = getCanvasCoordinates(e);
+
+                if (isDraggingWatermark) {
+                    const newX = pt.x - dragOffset.x;
+                    const newY = pt.y - dragOffset.y;
+
+                    // Compute normalized percentages relative to canvas dimensions
+                    const xPercent = Math.max(0, Math.min(1, newX / previewCanvas.width));
+                    const yPercent = Math.max(0, Math.min(1, newY / previewCanvas.height));
+
+                    state.customPos = { xPercent, yPercent };
+                    coordBadge.textContent = `X: ${Math.round(xPercent * 100)}% · Y: ${Math.round(yPercent * 100)}%`;
+                    resetSnapBtn.classList.remove('hidden');
+                    updateAnchorUI();
+                    renderPreview();
+                } else {
+                    if (isInsideWatermark(pt)) {
+                        previewCanvas.classList.add('canvas-hover-wm');
+                    } else {
+                        previewCanvas.classList.remove('canvas-hover-wm');
+                    }
+                }
+            }
+
+            function onPointerUp() {
+                if (isDraggingWatermark) {
+                    isDraggingWatermark = false;
+                    previewCanvas.classList.remove('canvas-drag-active');
+                }
+            }
+
+            previewCanvas.addEventListener('mousedown', onPointerDown);
+            window.addEventListener('mousemove', onPointerMove);
+            window.addEventListener('mouseup', onPointerUp);
+
+            previewCanvas.addEventListener('touchstart', onPointerDown, { passive: true });
+            window.addEventListener('touchmove', onPointerMove, { passive: true });
+            window.addEventListener('touchend', onPointerUp);
+        }
+
+        // --- Canvas Rendering Pipeline ---
+        function renderPreview() {
+            if (state.photos.length === 0) return;
+
+            const activeFile = state.photos[state.selectedIndex];
+            activePhotoName.textContent = activeFile ? activeFile.name : '';
+
+            const img = new Image();
+            img.onload = () => {
+                previewCanvas.width = img.width;
+                previewCanvas.height = img.height;
+                canvasDims.textContent = `${img.width} × ${img.height}`;
+
+                ctx.clearRect(0, 0, previewCanvas.width, previewCanvas.height);
+                ctx.drawImage(img, 0, 0);
+
+                watermarkBounds = drawWatermark(ctx, previewCanvas.width, previewCanvas.height);
+            };
+            img.src = state.photoUrls[state.selectedIndex];
+        }
+
+        // High-Precision Watermark Geometry & Render Engine
+        function drawWatermark(targetCtx, w, h) {
+            targetCtx.save();
+
+            let targetW = 0;
+            let targetH = 0;
+
+            // Step 1: Calculate dimensions
+            if (state.watermarkType === 'logo') {
+                if (!state.logoImage) {
+                    targetCtx.restore();
+                    return null;
+                }
+                const logoAspect = state.logoImage.width / state.logoImage.height;
+                targetW = w * (state.scale / 100);
+                targetH = targetW / logoAspect;
+            } else {
+                // Text mode geometry
+                const fontSize = Math.max(16, (w * (state.scale / 100)) * 0.28);
+                const fontStyleStr = state.textWeight === 'italic' ? 'italic' : `${state.textWeight}`;
+                targetCtx.font = `${fontStyleStr} ${fontSize}px ${state.textFont}`;
+                
+                const metrics = targetCtx.measureText(state.textContent || ' ');
+                const textWidth = metrics.width;
+                const textHeight = fontSize * 1.2;
+                
+                targetW = state.textBadge ? textWidth + fontSize * 1.2 : textWidth;
+                targetH = state.textBadge ? textHeight + fontSize * 0.4 : textHeight;
+            }
+
+            // Step 2: Calculate position (Snap or Custom Freeform)
+            const edgeMargin = Math.max(12, w * (state.margin / 100));
+            let x = edgeMargin;
+            let y = edgeMargin;
+
+            if (state.customPos) {
+                x = state.customPos.xPercent * w;
+                y = state.customPos.yPercent * h;
+            } else {
+                switch (state.anchor) {
+                    case 'top-left':
+                        x = edgeMargin;
+                        y = edgeMargin;
+                        break;
+                    case 'top-center':
+                        x = (w - targetW) / 2;
+                        y = edgeMargin;
+                        break;
+                    case 'top-right':
+                        x = w - targetW - edgeMargin;
+                        y = edgeMargin;
+                        break;
+                    case 'center-left':
+                        x = edgeMargin;
+                        y = (h - targetH) / 2;
+                        break;
+                    case 'center':
+                        x = (w - targetW) / 2;
+                        y = (h - targetH) / 2;
+                        break;
+                    case 'center-right':
+                        x = w - targetW - edgeMargin;
+                        y = (h - targetH) / 2;
+                        break;
+                    case 'bottom-left':
+                        x = edgeMargin;
+                        y = h - targetH - edgeMargin;
+                        break;
+                    case 'bottom-center':
+                        x = (w - targetW) / 2;
+                        y = h - targetH - edgeMargin;
+                        break;
+                    case 'bottom-right':
+                    default:
+                        x = w - targetW - edgeMargin;
+                        y = h - targetH - edgeMargin;
+                        break;
+                }
+            }
+
+            // Step 3: Draw Watermark Content
+            targetCtx.globalAlpha = state.opacity / 100;
+
+            if (state.dropShadow) {
+                targetCtx.shadowColor = 'rgba(0, 0, 0, 0.75)';
+                targetCtx.shadowBlur = Math.max(4, targetW * 0.04);
+                targetCtx.shadowOffsetX = Math.max(2, targetW * 0.015);
+                targetCtx.shadowOffsetY = Math.max(2, targetW * 0.015);
+            }
+
+            if (state.watermarkType === 'logo') {
+                if (state.logoInvert) {
+                    // Create offscreen white knockout
+                    const offCanvas = document.createElement('canvas');
+                    offCanvas.width = state.logoImage.width;
+                    offCanvas.height = state.logoImage.height;
+                    const oCtx = offCanvas.getContext('2d');
+                    
+                    oCtx.drawImage(state.logoImage, 0, 0);
+                    oCtx.globalCompositeOperation = 'source-in';
+                    oCtx.fillStyle = '#ffffff';
+                    oCtx.fillRect(0, 0, offCanvas.width, offCanvas.height);
+
+                    targetCtx.drawImage(offCanvas, x, y, targetW, targetH);
+                } else {
+                    targetCtx.drawImage(state.logoImage, x, y, targetW, targetH);
+                }
+            } else {
+                // Text render
+                const fontSize = Math.max(16, (w * (state.scale / 100)) * 0.28);
+                const fontStyleStr = state.textWeight === 'italic' ? 'italic' : `${state.textWeight}`;
+                targetCtx.font = `${fontStyleStr} ${fontSize}px ${state.textFont}`;
+                targetCtx.textBaseline = 'middle';
+
+                if (state.textBadge) {
+                    // Draw rounded pill container
+                    targetCtx.save();
+                    targetCtx.fillStyle = 'rgba(15, 23, 42, 0.65)';
+                    const radius = targetH / 2;
+                    targetCtx.beginPath();
+                    targetCtx.roundRect(x, y, targetW, targetH, radius);
+                    targetCtx.fill();
+                    targetCtx.restore();
+
+                    targetCtx.fillStyle = state.textColor;
+                    targetCtx.textAlign = 'center';
+                    targetCtx.fillText(state.textContent || '', x + targetW / 2, y + targetH / 2);
+                } else {
+                    targetCtx.fillStyle = state.textColor;
+                    targetCtx.textAlign = 'left';
+                    targetCtx.fillText(state.textContent || '', x, y + targetH / 2);
+                }
+            }
+
+            targetCtx.restore();
+
+            return {
+                x,
+                y,
+                width: targetW,
+                height: targetH,
+                canvasW: w,
+                canvasH: h
+            };
+        }
+
+        // --- Batch Export Engine via JSZip ---
+        async function processAndExportZip() {
+            const total = state.photos.length;
+            if (total === 0) return;
+
+            exportZipBtn.disabled = true;
+            exportProgressModal.classList.remove('hidden');
+
+            const zip = new JSZip();
+
+            for (let i = 0; i < total; i++) {
+                // Update Progress Modal
+                const percent = Math.round(((i + 1) / total) * 100);
+                progressStatusText.textContent = `Processing image ${i + 1} of ${total} (${percent}%)...`;
+                progressBarFill.style.width = `${percent}%`;
+
+                // Yield to event loop for smooth UI animation
+                await new Promise(r => requestAnimationFrame(r));
+
+                const blob = await renderWatermarkedBlob(state.photoUrls[i]);
+                const originalName = state.photos[i].name.replace(/\.[^/.]+$/, "");
+                
+                // Formulate filename based on pattern
+                const ext = state.exportFormat === 'image/jpeg' ? 'jpg' : (state.exportFormat === 'image/webp' ? 'webp' : 'png');
+                const outName = state.namingPattern.replace('{name}', originalName) + `.${ext}`;
+
+                // If only 1 image, directly trigger download
+                if (total === 1) {
+                    const a = document.createElement('a');
+                    a.href = URL.createObjectURL(blob);
+                    a.download = outName;
+                    a.click();
+                    setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+                    break;
+                }
+
+                zip.file(outName, blob);
+            }
+
+            if (total > 1) {
+                progressStatusText.textContent = `Compiling ZIP archive...`;
+                const zipContent = await zip.generateAsync({ type: 'blob' }, (metadata) => {
+                    progressBarFill.style.width = `${metadata.percent}%`;
+                });
+
+                const a = document.createElement('a');
+                a.href = URL.createObjectURL(zipContent);
+                a.download = `Stamp_Batch_${Date.now()}.zip`;
+                a.click();
+                setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+            }
+
+            exportProgressModal.classList.add('hidden');
+            exportZipBtn.disabled = false;
+        }
+
+        function renderWatermarkedBlob(url) {
+            return new Promise((resolve) => {
+                const img = new Image();
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    canvas.width = img.width;
+                    canvas.height = img.height;
+                    const c = canvas.getContext('2d');
+
+                    c.drawImage(img, 0, 0);
+                    drawWatermark(c, img.width, img.height);
+
+                    canvas.toBlob((blob) => {
+                        resolve(blob);
+                    }, state.exportFormat, state.exportQuality);
+                };
+                img.src = url;
+            });
+        }
+    </script>
+</body>
+</html>

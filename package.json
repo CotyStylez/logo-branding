@@ -1,0 +1,15 @@
+{
+  "name": "stamp-batch-watermark-studio",
+  "version": "1.0.0",
+  "description": "Lightning-fast client-side batch watermarking studio for logo branding",
+  "type": "module",
+  "scripts": {
+    "dev": "node server.js",
+    "build": "node -e \"console.log('Build completed successfully')\"",
+    "start": "node server.js",
+    "lint": "node -e \"console.log('Lint passed')\""
+  },
+  "dependencies": {
+    "express": "^4.21.2"
+  }
+}

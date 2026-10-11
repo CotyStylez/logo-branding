@@ -1,0 +1,8 @@
+{
+  "name": "Stamp — Lightning-Fast Batch Watermarking",
+  "description": "Lightning-fast client-side batch watermarking studio for logo branding",
+  "permissions": [],
+  "capabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
