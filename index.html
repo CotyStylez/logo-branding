@@ -13,10 +13,10 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
-    <!-- Google Fonts: Plus Jakarta Sans, DM Sans, JetBrains Mono, Cinzel, Oswald -->
+    <!-- Google Fonts: Plus Jakarta Sans, DM Sans, Playfair Display, Caveat, Dancing Script, Cinzel, Oswald, Montserrat, JetBrains Mono -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500;600&family=Oswald:wght@500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Cinzel:wght@600;700&family=Dancing+Script:wght@600;700&family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500;600&family=Montserrat:wght@500;600;700;800&family=Oswald:wght@500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;1,600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     
     <script>
         tailwind.config = {
@@ -86,6 +86,13 @@
         .canvas-hover-wm {
             cursor: grab;
         }
+        input[type="color"]::-webkit-color-swatch-wrapper {
+            padding: 0;
+        }
+        input[type="color"]::-webkit-color-swatch {
+            border: none;
+            border-radius: 9999px;
+        }
     </style>
 </head>
 <body class="h-screen w-screen flex flex-col justify-between selection:bg-indigo-500 selection:text-white">
@@ -99,7 +106,7 @@
             </div>
             <div class="flex items-baseline gap-2">
                 <span class="font-bold text-sm tracking-tight text-white">Stamp Studio</span>
-                <span class="hidden sm:inline text-xs text-slate-500 font-medium">Local Batch Suite</span>
+                <span class="hidden sm:inline text-xs text-slate-500 font-medium">Pro Typography Suite</span>
             </div>
         </div>
 
@@ -111,10 +118,12 @@
             <span class="text-slate-600" aria-hidden="true">·</span>
             <span>Zero Cloud Uploads</span>
             <span class="text-slate-600" aria-hidden="true">·</span>
-            <span>Offline Ready</span>
+            <span>Dynamic EXIF Tokens</span>
             <span class="text-slate-600" aria-hidden="true">·</span>
-            <span class="text-indigo-400 flex items-center gap-1" title="Arrow keys navigate, 1-9 snaps position">
-                <i data-lucide="keyboard" class="w-3.5 h-3.5"></i> Hotkeys Enabled
+            <span>Tiled Proofing & Rotations</span>
+            <span class="text-slate-600" aria-hidden="true">·</span>
+            <span class="text-indigo-400 flex items-center gap-1" title="Arrow keys navigate photos, 1-9 snaps position">
+                <i data-lucide="keyboard" class="w-3.5 h-3.5"></i> Hotkeys
             </span>
         </div>
 
@@ -133,7 +142,7 @@
     <main class="flex-1 flex flex-col lg:flex-row overflow-hidden p-3 sm:p-4 lg:p-5 gap-4">
         
         <!-- Left Sidebar: Controls & Settings -->
-        <aside class="w-full lg:w-80 flex flex-col gap-3.5 shrink-0 overflow-y-auto pr-0.5">
+        <aside class="w-full lg:w-96 flex flex-col gap-3 shrink-0 overflow-y-auto pr-0.5">
             
             <!-- Card 1: Watermark Mode Selector & Content -->
             <div class="bg-slate-900/70 border border-slate-800/80 rounded-2xl p-4 shadow-xl">
@@ -144,17 +153,17 @@
                         Watermark Type
                     </span>
                     <div class="flex p-0.5 bg-slate-950/80 rounded-lg border border-slate-800/80">
-                        <button id="tabLogoMode" class="px-2.5 py-1 text-xs font-semibold rounded-md transition bg-indigo-600 text-white shadow-sm flex items-center gap-1">
+                        <button id="tabLogoMode" class="px-2.5 py-1 text-xs font-semibold rounded-md transition text-slate-400 hover:text-slate-200 flex items-center gap-1">
                             <i data-lucide="image" class="w-3 h-3"></i> Logo
                         </button>
-                        <button id="tabTextMode" class="px-2.5 py-1 text-xs font-semibold rounded-md transition text-slate-400 hover:text-slate-200 flex items-center gap-1">
-                            <i data-lucide="type" class="w-3 h-3"></i> Text
+                        <button id="tabTextMode" class="px-2.5 py-1 text-xs font-semibold rounded-md transition bg-indigo-600 text-white shadow-sm flex items-center gap-1">
+                            <i data-lucide="type" class="w-3 h-3"></i> Text Studio
                         </button>
                     </div>
                 </div>
 
-                <!-- Logo Mode Content -->
-                <div id="logoModeContainer" class="space-y-3">
+                <!-- Logo Mode Content (Hidden by default) -->
+                <div id="logoModeContainer" class="hidden space-y-3">
                     <input type="file" id="logoInput" accept="image/*" class="hidden">
                     <label for="logoInput" class="group relative w-full h-24 checkered-grid rounded-xl border border-slate-800 hover:border-indigo-500/50 flex flex-col items-center justify-center cursor-pointer transition overflow-hidden">
                         <div id="logoPlaceholder" class="flex flex-col items-center p-2 text-center">
@@ -170,7 +179,6 @@
                         </div>
                     </label>
 
-                    <!-- Logo Actions / Toggles -->
                     <div class="flex items-center justify-between text-xs pt-1">
                         <label class="flex items-center gap-2 cursor-pointer text-slate-300 hover:text-white transition">
                             <input type="checkbox" id="logoInvertToggle" class="w-3.5 h-3.5 accent-indigo-500 rounded cursor-pointer">
@@ -180,58 +188,235 @@
                     </div>
                 </div>
 
-                <!-- Text Mode Content (Hidden by default) -->
-                <div id="textModeContainer" class="hidden space-y-3">
+                <!-- Text Mode Content (State-of-the-Art Typography Studio) -->
+                <div id="textModeContainer" class="space-y-3.5">
+                    
+                    <!-- Pro Styles / Quick Signature Looks Bar -->
+                    <div class="space-y-1.5">
+                        <div class="flex items-center justify-between">
+                            <span class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider flex items-center gap-1">
+                                <i data-lucide="sparkles" class="w-3 h-3 text-amber-400"></i> Pro Style Looks
+                            </span>
+                            <button id="saveCustomPresetBtn" class="text-[11px] text-indigo-400 hover:text-indigo-300 transition flex items-center gap-1">
+                                <i data-lucide="bookmark-plus" class="w-3 h-3"></i> Save Look
+                            </button>
+                        </div>
+                        <div class="grid grid-cols-3 gap-1">
+                            <button data-style="luxury" class="pro-style-btn px-2 py-1.5 text-[10px] font-semibold bg-slate-950/80 hover:bg-slate-800 border border-slate-800 rounded-lg text-amber-400 transition truncate text-center">
+                                Luxury Gold
+                            </button>
+                            <button data-style="signature" class="pro-style-btn px-2 py-1.5 text-[10px] font-semibold bg-slate-950/80 hover:bg-slate-800 border border-slate-800 rounded-lg text-slate-200 transition truncate text-center">
+                                Signature Hand
+                            </button>
+                            <button data-style="proof" class="pro-style-btn px-2 py-1.5 text-[10px] font-semibold bg-slate-950/80 hover:bg-slate-800 border border-slate-800 rounded-lg text-rose-400 transition truncate text-center">
+                                Proof Grid
+                            </button>
+                            <button data-style="glass" class="pro-style-btn px-2 py-1.5 text-[10px] font-semibold bg-slate-950/80 hover:bg-slate-800 border border-slate-800 rounded-lg text-cyan-300 transition truncate text-center">
+                                Studio Glass
+                            </button>
+                            <button data-style="film" class="pro-style-btn px-2 py-1.5 text-[10px] font-semibold bg-slate-950/80 hover:bg-slate-800 border border-slate-800 rounded-lg text-orange-400 transition truncate text-center">
+                                Film Date
+                            </button>
+                            <select id="userPresetsSelect" class="bg-slate-950/80 border border-slate-800 rounded-lg px-1.5 py-1 text-[10px] text-slate-300 focus:outline-none truncate">
+                                <option value="">Saved Looks...</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Message Textarea & Dynamic Token Inserters -->
                     <div>
-                        <label class="block text-xs font-medium text-slate-400 mb-1">Watermark Text</label>
-                        <div class="relative">
-                            <input type="text" id="textInput" value="© CREATOR STUDIO" placeholder="e.g. © 2026 Studio" class="w-full bg-slate-950/80 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500/80 transition">
-                            <button id="insertCopyrightBtn" class="absolute right-2 top-1/2 -translate-y-1/2 px-1.5 py-0.5 text-[10px] font-mono font-bold bg-slate-800 hover:bg-slate-700 text-slate-300 rounded transition" title="Insert © symbol">
-                                +©
+                        <div class="flex items-center justify-between mb-1">
+                            <label class="text-xs font-medium text-slate-400">Message / Copyright</label>
+                            <span class="text-[10px] text-indigo-400 font-medium">Auto-wraps to fit</span>
+                        </div>
+                        <textarea id="textInput" rows="2" placeholder="e.g. © {year} Coty Stylez · All Rights Reserved&#10;Shot on Leica M11" class="w-full bg-slate-950/80 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500/80 transition resize-none font-sans"></textarea>
+                        
+                        <!-- Smart Dynamic EXIF & Preset Tokens -->
+                        <div class="flex flex-wrap items-center gap-1 mt-1.5">
+                            <span class="text-[10px] text-slate-500 font-medium mr-0.5">Tokens:</span>
+                            <button data-insert="{year}" class="token-btn px-1.5 py-0.5 text-[10px] bg-slate-800 hover:bg-slate-700 hover:text-white text-indigo-300 rounded font-mono transition" title="Current Year (e.g. 2026)">
+                                {year}
+                            </button>
+                            <button data-insert="{filename}" class="token-btn px-1.5 py-0.5 text-[10px] bg-slate-800 hover:bg-slate-700 hover:text-white text-indigo-300 rounded font-mono transition" title="Image Filename without extension">
+                                {filename}
+                            </button>
+                            <button data-insert="{index}" class="token-btn px-1.5 py-0.5 text-[10px] bg-slate-800 hover:bg-slate-700 hover:text-white text-indigo-300 rounded font-mono transition" title="Photo sequence number (01, 02...)">
+                                {index}
+                            </button>
+                            <button data-insert="{date}" class="token-btn px-1.5 py-0.5 text-[10px] bg-slate-800 hover:bg-slate-700 hover:text-white text-indigo-300 rounded font-mono transition" title="Today's formatted date">
+                                {date}
+                            </button>
+                            <button data-insert="© " class="token-btn px-1.5 py-0.5 text-[10px] bg-slate-800 hover:bg-slate-700 hover:text-white text-slate-300 rounded font-mono transition" title="Copyright symbol">
+                                ©
                             </button>
                         </div>
                     </div>
 
+                    <!-- Layout Mode: Single Corner vs Full Canvas Tiled Proof Grid -->
+                    <div class="p-2.5 bg-slate-950/70 rounded-xl border border-slate-800/80 space-y-2">
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs font-semibold text-slate-300">Pattern Mode</span>
+                            <div class="flex p-0.5 bg-slate-900 rounded-lg border border-slate-800 text-[11px]">
+                                <button id="patternSingleBtn" class="px-2.5 py-0.5 font-semibold rounded-md transition bg-indigo-600 text-white shadow-sm">
+                                    Single Snap
+                                </button>
+                                <button id="patternTileBtn" class="px-2.5 py-0.5 font-semibold rounded-md transition text-slate-400 hover:text-white">
+                                    Tiled Grid
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Rotation Angle Control -->
+                        <div class="flex items-center justify-between gap-3 pt-1">
+                            <div class="flex items-center gap-1.5">
+                                <span class="text-[11px] text-slate-400">Angle:</span>
+                                <span id="rotationVal" class="text-indigo-400 font-mono text-[11px] font-semibold w-8 text-right">0°</span>
+                            </div>
+                            <input type="range" id="rotationSlider" min="-90" max="90" value="0" class="flex-1 accent-indigo-500 bg-slate-900 h-1.5 rounded cursor-pointer">
+                            <div class="flex gap-1 shrink-0">
+                                <button data-angle="0" class="angle-quick-btn px-1.5 py-0.5 text-[10px] bg-slate-900 hover:bg-slate-800 text-slate-300 rounded border border-slate-800">0°</button>
+                                <button data-angle="-30" class="angle-quick-btn px-1.5 py-0.5 text-[10px] bg-slate-900 hover:bg-slate-800 text-slate-300 rounded border border-slate-800">-30°</button>
+                                <button data-angle="45" class="angle-quick-btn px-1.5 py-0.5 text-[10px] bg-slate-900 hover:bg-slate-800 text-slate-300 rounded border border-slate-800">45°</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Typography Selection & Weight -->
                     <div class="grid grid-cols-2 gap-2">
                         <div>
-                            <label class="block text-[11px] font-medium text-slate-400 mb-1">Typography</label>
+                            <label class="block text-[11px] font-medium text-slate-400 mb-1">Font Family</label>
                             <select id="textFontSelect" class="w-full bg-slate-950/80 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-indigo-500 transition">
                                 <option value="'Plus Jakarta Sans', sans-serif">Modern Sans</option>
-                                <option value="'DM Sans', sans-serif">Clean Neutral</option>
-                                <option value="'Cinzel', serif">Luxury Serif</option>
-                                <option value="'Oswald', sans-serif">Bold Impact</option>
-                                <option value="'JetBrains Mono', monospace">Technical Mono</option>
+                                <option value="'DM Sans', sans-serif">Clean Editorial</option>
+                                <option value="'Playfair Display', serif">Editorial Luxury Serif</option>
+                                <option value="'Cinzel', serif">Luxury Roman Serif</option>
+                                <option value="'Caveat', cursive">Signature Hand</option>
+                                <option value="'Dancing Script', cursive">Calligraphy Script</option>
+                                <option value="'Oswald', sans-serif">Bold Impact Condensed</option>
+                                <option value="'Montserrat', sans-serif">Geometric Bold</option>
+                                <option value="'JetBrains Mono', monospace">Technical Monospace</option>
                             </select>
                         </div>
                         <div>
-                            <label class="block text-[11px] font-medium text-slate-400 mb-1">Style Weight</label>
+                            <label class="block text-[11px] font-medium text-slate-400 mb-1">Weight & Style</label>
                             <select id="textStyleSelect" class="w-full bg-slate-950/80 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-indigo-500 transition">
+                                <option value="800">Extra Bold (800)</option>
                                 <option value="700">Bold (700)</option>
+                                <option value="600">SemiBold (600)</option>
                                 <option value="500">Medium (500)</option>
+                                <option value="400">Regular (400)</option>
                                 <option value="italic">Italic</option>
                             </select>
                         </div>
                     </div>
 
-                    <!-- Color Swatches & Pill Badge Toggle -->
-                    <div class="flex items-center justify-between pt-1">
-                        <div class="flex items-center gap-1.5">
-                            <button data-color="#ffffff" class="color-btn w-5 h-5 rounded-full bg-white ring-2 ring-indigo-500 ring-offset-1 ring-offset-slate-900 transition" title="White"></button>
-                            <button data-color="#000000" class="color-btn w-5 h-5 rounded-full bg-black border border-slate-700 transition" title="Black"></button>
-                            <button data-color="#f59e0b" class="color-btn w-5 h-5 rounded-full bg-amber-500 transition" title="Warm Gold"></button>
-                            <button data-color="#6366f1" class="color-btn w-5 h-5 rounded-full bg-indigo-500 transition" title="Electric Indigo"></button>
+                    <!-- Alignment, Text Case & Tracking (Letter Spacing) -->
+                    <div class="grid grid-cols-3 gap-2 p-2 bg-slate-950/60 rounded-xl border border-slate-800/80">
+                        <!-- Text Alignment -->
+                        <div class="flex flex-col gap-1">
+                            <span class="text-[10px] text-slate-400 font-medium">Align</span>
+                            <div class="flex bg-slate-900 rounded-lg p-0.5 border border-slate-800">
+                                <button data-align="left" class="align-btn flex-1 py-1 text-slate-400 hover:text-white flex justify-center rounded transition"><i data-lucide="align-left" class="w-3 h-3"></i></button>
+                                <button data-align="center" class="align-btn flex-1 py-1 bg-indigo-600 text-white flex justify-center rounded transition shadow-sm"><i data-lucide="align-center" class="w-3 h-3"></i></button>
+                                <button data-align="right" class="align-btn flex-1 py-1 text-slate-400 hover:text-white flex justify-center rounded transition"><i data-lucide="align-right" class="w-3 h-3"></i></button>
+                            </div>
                         </div>
-                        <label class="flex items-center gap-1.5 text-xs text-slate-300 cursor-pointer">
-                            <input type="checkbox" id="textBadgeToggle" class="w-3.5 h-3.5 accent-indigo-500 rounded cursor-pointer">
-                            <span>Badge Pill</span>
-                        </label>
+
+                        <!-- Casing -->
+                        <div class="flex flex-col gap-1">
+                            <span class="text-[10px] text-slate-400 font-medium">Case</span>
+                            <button id="toggleCaseBtn" class="py-1 px-2 bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 text-xs font-mono font-bold rounded-lg transition flex items-center justify-center gap-1">
+                                <span id="caseLabel">Aa</span>
+                            </button>
+                        </div>
+
+                        <!-- Spacing / Tracking -->
+                        <div class="flex flex-col gap-1">
+                            <span class="text-[10px] text-slate-400 font-medium">Tracking</span>
+                            <select id="textTrackingSelect" class="bg-slate-900 border border-slate-800 rounded-lg py-1 px-1 text-[11px] text-slate-200 focus:outline-none">
+                                <option value="normal">Normal</option>
+                                <option value="wide">Wide</option>
+                                <option value="ultra">Spaced</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Colors & Metallic Gradients -->
+                    <div class="space-y-1.5 pt-0.5">
+                        <div class="flex items-center justify-between text-[11px]">
+                            <span class="text-slate-400 font-medium">Fill Style:</span>
+                            <div class="flex items-center gap-1">
+                                <button data-grad="none" class="grad-btn px-2 py-0.5 rounded font-semibold text-[10px] bg-indigo-600 text-white">Solid</button>
+                                <button data-grad="gold" class="grad-btn px-2 py-0.5 rounded font-semibold text-[10px] text-amber-300 hover:text-white">Gold</button>
+                                <button data-grad="silver" class="grad-btn px-2 py-0.5 rounded font-semibold text-[10px] text-slate-300 hover:text-white">Chrome</button>
+                                <button data-grad="rose" class="grad-btn px-2 py-0.5 rounded font-semibold text-[10px] text-rose-300 hover:text-white">Rose</button>
+                                <button data-grad="sunset" class="grad-btn px-2 py-0.5 rounded font-semibold text-[10px] text-purple-300 hover:text-white">Sunset</button>
+                            </div>
+                        </div>
+
+                        <!-- Solid Swatches (Shown when Solid selected) -->
+                        <div id="solidSwatchesRow" class="flex items-center justify-between pt-1">
+                            <div class="flex items-center gap-1.5">
+                                <button data-color="#ffffff" class="color-btn w-5 h-5 rounded-full bg-white ring-2 ring-indigo-500 ring-offset-1 ring-offset-slate-900 transition" title="White"></button>
+                                <button data-color="#000000" class="color-btn w-5 h-5 rounded-full bg-black border border-slate-700 transition" title="Black"></button>
+                                <button data-color="#f59e0b" class="color-btn w-5 h-5 rounded-full bg-amber-500 transition" title="Warm Amber"></button>
+                                <button data-color="#94a3b8" class="color-btn w-5 h-5 rounded-full bg-slate-400 transition" title="Silver Slate"></button>
+                                <button data-color="#6366f1" class="color-btn w-5 h-5 rounded-full bg-indigo-500 transition" title="Electric Indigo"></button>
+                                <button data-color="#f43f5e" class="color-btn w-5 h-5 rounded-full bg-rose-500 transition" title="Rose"></button>
+                                
+                                <label class="w-5 h-5 rounded-full cursor-pointer relative overflow-hidden border border-slate-700 flex items-center justify-center bg-gradient-to-tr from-amber-400 via-rose-500 to-indigo-500" title="Custom Color Picker">
+                                    <input type="color" id="customColorPicker" value="#ffffff" class="opacity-0 absolute inset-0 cursor-pointer w-full h-full">
+                                </label>
+                            </div>
+
+                            <!-- Text Outline Halo -->
+                            <label class="flex items-center gap-1.5 text-xs text-slate-300 cursor-pointer" title="Adds clean high-contrast contour around text">
+                                <input type="checkbox" id="textOutlineToggle" class="w-3.5 h-3.5 accent-indigo-500 rounded cursor-pointer">
+                                <span>Text Halo</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Blend Mode & Plate Style -->
+                    <div class="grid grid-cols-2 gap-2 pt-1">
+                        <div>
+                            <label class="block text-[11px] font-medium text-slate-400 mb-1">Blend Mode</label>
+                            <select id="blendModeSelect" class="w-full bg-slate-950/80 border border-slate-800 rounded-lg px-2 py-1.5 text-xs text-white focus:outline-none focus:border-indigo-500 transition">
+                                <option value="source-over">Normal</option>
+                                <option value="overlay">Overlay (Photo Blend)</option>
+                                <option value="screen">Screen (Luminous)</option>
+                                <option value="multiply">Multiply (Ink Darken)</option>
+                                <option value="difference">Difference (Inverter)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-medium text-slate-400 mb-1">Badge Plate</label>
+                            <select id="textPlateSelect" class="w-full bg-slate-950/80 border border-slate-800 rounded-lg px-2 py-1.5 text-xs text-white focus:outline-none focus:border-indigo-500 transition">
+                                <option value="none">None (Transparent)</option>
+                                <option value="pill">Pill Capsule</option>
+                                <option value="box">Rounded Box</option>
+                                <option value="glass">Frosted Glass</option>
+                                <option value="neon">Neon Border Plate</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Auto-Fit Safety Toggle -->
+                    <div class="flex items-center justify-between p-2 bg-indigo-950/20 border border-indigo-800/30 rounded-xl">
+                        <div class="flex flex-col">
+                            <span class="text-xs font-semibold text-indigo-300 flex items-center gap-1">
+                                <i data-lucide="shield-check" class="w-3.5 h-3.5 text-indigo-400"></i> Auto-Fit & Multi-Line
+                            </span>
+                            <span class="text-[10px] text-slate-400">Guarantees message stays inside image margins</span>
+                        </div>
+                        <input type="checkbox" id="textAutoFitToggle" checked class="w-4 h-4 accent-indigo-500 rounded cursor-pointer">
                     </div>
                 </div>
 
             </div>
 
-            <!-- Card 2: Position & Freeform Dragging -->
-            <div class="bg-slate-900/70 border border-slate-800/80 rounded-2xl p-4 shadow-xl flex flex-col gap-3">
+            <!-- Card 2: Position & Freeform Dragging (Active in Single Anchor mode) -->
+            <div id="positionCard" class="bg-slate-900/70 border border-slate-800/80 rounded-2xl p-4 shadow-xl flex flex-col gap-3">
                 <div class="flex items-center justify-between">
                     <span class="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
                         <span class="w-5 h-5 rounded-full bg-indigo-500/20 text-indigo-400 flex items-center justify-center font-bold text-[10px]">2</span> 
@@ -266,12 +451,12 @@
                         <label class="text-slate-300 font-medium">Edge Inset Margin</label>
                         <span id="marginVal" class="text-indigo-400 font-mono font-semibold">3%</span>
                     </div>
-                    <input type="range" id="marginSlider" min="1" max="12" value="3" class="w-full accent-indigo-500 bg-slate-950 h-1.5 rounded-lg cursor-pointer">
+                    <input type="range" id="marginSlider" min="1" max="15" value="3" class="w-full accent-indigo-500 bg-slate-950 h-1.5 rounded-lg cursor-pointer">
                 </div>
             </div>
 
             <!-- Card 3: Scale, Opacity & Contrast -->
-            <div class="bg-slate-900/70 border border-slate-800/80 rounded-2xl p-4 shadow-xl flex flex-col gap-3.5 flex-1">
+            <div class="bg-slate-900/70 border border-slate-800/80 rounded-2xl p-4 shadow-xl flex flex-col gap-3.5">
                 <span class="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
                     <span class="w-5 h-5 rounded-full bg-indigo-500/20 text-indigo-400 flex items-center justify-center font-bold text-[10px]">3</span> 
                     Scale & Appearance
@@ -283,7 +468,7 @@
                             <label class="text-slate-300 font-medium">Watermark Size Scale</label>
                             <span id="scaleVal" class="text-indigo-400 font-mono font-semibold">18%</span>
                         </div>
-                        <input type="range" id="scaleSlider" min="5" max="50" value="18" class="w-full accent-indigo-500 bg-slate-950 h-1.5 rounded-lg cursor-pointer">
+                        <input type="range" id="scaleSlider" min="5" max="60" value="18" class="w-full accent-indigo-500 bg-slate-950 h-1.5 rounded-lg cursor-pointer">
                     </div>
 
                     <div class="space-y-1">
@@ -291,7 +476,7 @@
                             <label class="text-slate-300 font-medium">Watermark Opacity</label>
                             <span id="opacityVal" class="text-indigo-400 font-mono font-semibold">90%</span>
                         </div>
-                        <input type="range" id="opacitySlider" min="15" max="100" value="90" class="w-full accent-indigo-500 bg-slate-950 h-1.5 rounded-lg cursor-pointer">
+                        <input type="range" id="opacitySlider" min="10" max="100" value="90" class="w-full accent-indigo-500 bg-slate-950 h-1.5 rounded-lg cursor-pointer">
                     </div>
                 </div>
 
@@ -320,7 +505,7 @@
                         <i data-lucide="images" class="w-8 h-8"></i>
                     </div>
                     <h2 class="text-xl font-bold text-white mb-1.5">Drop Your Photos Here</h2>
-                    <p class="text-xs text-slate-400 max-w-md mb-6">Drag and drop a batch of photos (JPG, PNG, WebP) to instantly preview, position your watermark, and batch export.</p>
+                    <p class="text-xs text-slate-400 max-w-md mb-6">Drag and drop a batch of photos (JPG, PNG, WebP) to instantly preview, auto-fit your watermark message, and batch export.</p>
                     <input type="file" id="photoInput" accept="image/*" multiple class="hidden">
                     <label for="photoInput" class="px-6 py-3 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold rounded-xl shadow-lg shadow-indigo-600/30 cursor-pointer transition flex items-center gap-2">
                         <i data-lucide="folder-open" class="w-4 h-4"></i> Select Photos (Batch)
@@ -334,7 +519,7 @@
                     <span class="text-slate-600">·</span>
                     <span id="activePhotoName" class="font-medium text-slate-200 truncate max-w-[180px]">photo.jpg</span>
                     <span class="text-slate-600">·</span>
-                    <span class="text-indigo-400 flex items-center gap-1"><i data-lucide="move" class="w-3 h-3"></i> Drag to reposition</span>
+                    <span id="patternStatusBadge" class="text-indigo-400 font-medium">Single Snap</span>
                 </div>
             </div>
 
@@ -427,29 +612,44 @@
             selectedIndex: 0,      // Active preview index
             
             // Watermark Mode: 'logo' or 'text'
-            watermarkType: 'logo',
+            watermarkType: 'text',
             logoImage: null,       // Loaded HTMLImageElement for logo
             logoInvert: false,     // Invert logo to pure white knockout
             
-            // Text Watermark Configuration
-            textContent: '© CREATOR STUDIO',
+            // Comprehensive State-of-the-Art Typography Studio Configuration
+            textContent: '© {year} CREATOR STUDIO · ALL RIGHTS RESERVED',
             textFont: "'Plus Jakarta Sans', sans-serif",
             textWeight: '700',
+            colorType: 'solid',        // 'solid' | 'gradient'
             textColor: '#ffffff',
-            textBadge: false,
+            textGradient: 'gold',      // 'gold' | 'silver' | 'rose' | 'sunset'
+            textAlign: 'center',       // 'left' | 'center' | 'right'
+            textCase: 'normal',        // 'normal' | 'uppercase'
+            textTracking: 'normal',    // 'normal' | 'wide' | 'ultra'
+            textRotation: 0,           // -90 to 90 degrees
+            textPattern: 'single',     // 'single' | 'tile' (proof grid)
+            tileDensity: 2.2,          // spacing multiplier for tiled grid
+            blendMode: 'source-over',  // 'source-over' | 'overlay' | 'screen' | 'multiply' | 'difference'
+            textPlate: 'none',         // 'none' | 'pill' | 'box' | 'glass' | 'neon'
+            textOutline: false,        // Halo contour outline
+            textOutlineColor: '#000000',
+            textAutoFit: true,         // Guarantees text fits inside safe photo margins
 
             // Placement & Geometry
-            anchor: 'bottom-right',// 9-point anchor snap or 'custom'
-            customPos: null,       // { xPercent: 0.85, yPercent: 0.90 } when dragged freely
-            margin: 3,             // Edge margin % (1% - 12%)
-            scale: 18,             // Scale percentage (5% - 50%)
-            opacity: 90,           // Opacity percentage (15% - 100%)
-            dropShadow: true,      // High contrast drop shadow
+            anchor: 'bottom-right',    // 9-point anchor snap or 'custom'
+            customPos: null,           // { xPercent: 0.85, yPercent: 0.90 } when dragged freely
+            margin: 3,                 // Edge margin % (1% - 15%)
+            scale: 18,                 // Scale percentage (5% - 60%)
+            opacity: 90,               // Opacity percentage (10% - 100%)
+            dropShadow: true,          // High contrast drop shadow
 
             // Export Settings
             exportFormat: 'image/jpeg',
             exportQuality: 0.90,
-            namingPattern: '{name}_stamped'
+            namingPattern: '{name}_stamped',
+
+            // Custom Saved Looks
+            savedPresets: []
         };
 
         // Hit-test and dragging tracker
@@ -473,10 +673,29 @@
 
         // Text controls
         const textInput = document.getElementById('textInput');
-        const insertCopyrightBtn = document.getElementById('insertCopyrightBtn');
         const textFontSelect = document.getElementById('textFontSelect');
         const textStyleSelect = document.getElementById('textStyleSelect');
-        const textBadgeToggle = document.getElementById('textBadgeToggle');
+        const textTrackingSelect = document.getElementById('textTrackingSelect');
+        const toggleCaseBtn = document.getElementById('toggleCaseBtn');
+        const caseLabel = document.getElementById('caseLabel');
+        const customColorPicker = document.getElementById('customColorPicker');
+        const textOutlineToggle = document.getElementById('textOutlineToggle');
+        const textAutoFitToggle = document.getElementById('textAutoFitToggle');
+        const solidSwatchesRow = document.getElementById('solidSwatchesRow');
+        const blendModeSelect = document.getElementById('blendModeSelect');
+        const textPlateSelect = document.getElementById('textPlateSelect');
+
+        // Pattern & Rotation
+        const patternSingleBtn = document.getElementById('patternSingleBtn');
+        const patternTileBtn = document.getElementById('patternTileBtn');
+        const rotationSlider = document.getElementById('rotationSlider');
+        const rotationVal = document.getElementById('rotationVal');
+        const positionCard = document.getElementById('positionCard');
+        const patternStatusBadge = document.getElementById('patternStatusBadge');
+
+        // Presets & Looks
+        const saveCustomPresetBtn = document.getElementById('saveCustomPresetBtn');
+        const userPresetsSelect = document.getElementById('userPresetsSelect');
 
         // Placement & Sliders
         const coordBadge = document.getElementById('coordBadge');
@@ -529,39 +748,97 @@
         // --- Persistent Preferences (LocalStorage) ---
         function loadStoredPreferences() {
             // Restore Watermark Mode
-            const savedType = localStorage.getItem('stamp_wm_type');
-            if (savedType === 'text') {
-                setWatermarkMode('text');
-            } else {
-                setWatermarkMode('logo');
-            }
+            const savedType = localStorage.getItem('stamp_wm_type') || 'text';
+            setWatermarkMode(savedType);
 
             // Restore Text configs
             const savedText = localStorage.getItem('stamp_text_content');
             if (savedText) {
                 state.textContent = savedText;
                 textInput.value = savedText;
+            } else {
+                textInput.value = state.textContent;
             }
+
             const savedFont = localStorage.getItem('stamp_text_font');
             if (savedFont) {
                 state.textFont = savedFont;
                 textFontSelect.value = savedFont;
             }
+
             const savedWeight = localStorage.getItem('stamp_text_weight');
             if (savedWeight) {
                 state.textWeight = savedWeight;
                 textStyleSelect.value = savedWeight;
             }
+
+            const savedColorType = localStorage.getItem('stamp_color_type') || 'solid';
+            state.colorType = savedColorType;
+            const savedGradient = localStorage.getItem('stamp_text_gradient') || 'gold';
+            state.textGradient = savedGradient;
+            updateGradientButtons(savedColorType === 'gradient' ? savedGradient : 'none');
+
             const savedColor = localStorage.getItem('stamp_text_color');
             if (savedColor) {
                 state.textColor = savedColor;
+                customColorPicker.value = savedColor.startsWith('#') && savedColor.length === 7 ? savedColor : '#ffffff';
                 updateColorButtons(savedColor);
             }
-            const savedBadge = localStorage.getItem('stamp_text_badge');
-            if (savedBadge !== null) {
-                state.textBadge = savedBadge === 'true';
-                textBadgeToggle.checked = state.textBadge;
+
+            const savedAlign = localStorage.getItem('stamp_text_align');
+            if (savedAlign) {
+                state.textAlign = savedAlign;
+                updateAlignButtons(savedAlign);
             }
+
+            const savedCase = localStorage.getItem('stamp_text_case');
+            if (savedCase) {
+                state.textCase = savedCase;
+                caseLabel.textContent = savedCase === 'uppercase' ? 'TT' : 'Aa';
+            }
+
+            const savedTracking = localStorage.getItem('stamp_text_tracking');
+            if (savedTracking) {
+                state.textTracking = savedTracking;
+                textTrackingSelect.value = savedTracking;
+            }
+
+            const savedRotation = localStorage.getItem('stamp_text_rotation');
+            if (savedRotation !== null) {
+                state.textRotation = parseInt(savedRotation);
+                rotationSlider.value = state.textRotation;
+                rotationVal.textContent = `${state.textRotation}°`;
+            }
+
+            const savedPattern = localStorage.getItem('stamp_text_pattern') || 'single';
+            setPatternMode(savedPattern);
+
+            const savedBlend = localStorage.getItem('stamp_blend_mode');
+            if (savedBlend) {
+                state.blendMode = savedBlend;
+                blendModeSelect.value = savedBlend;
+            }
+
+            const savedPlate = localStorage.getItem('stamp_text_plate');
+            if (savedPlate) {
+                state.textPlate = savedPlate;
+                textPlateSelect.value = savedPlate;
+            }
+
+            const savedOutline = localStorage.getItem('stamp_text_outline');
+            if (savedOutline !== null) {
+                state.textOutline = savedOutline === 'true';
+                textOutlineToggle.checked = state.textOutline;
+            }
+
+            const savedAutoFit = localStorage.getItem('stamp_text_autofit');
+            if (savedAutoFit !== null) {
+                state.textAutoFit = savedAutoFit === 'true';
+                textAutoFitToggle.checked = state.textAutoFit;
+            }
+
+            // Restore User Presets
+            loadUserPresets();
 
             // Restore Logo
             const storedBase64 = localStorage.getItem('stamp_persistent_logo');
@@ -641,6 +918,7 @@
                 logoPreviewImg.src = dataUrl;
                 logoPlaceholder.classList.add('hidden');
                 logoPreviewWrapper.classList.remove('hidden');
+                removeLogoBtn.classList.remove('hidden');
                 renderPreview();
             };
             img.src = dataUrl;
@@ -667,20 +945,63 @@
                 renderPreview();
             });
 
-            // Text Controls
+            // Text Area Input
             textInput.addEventListener('input', (e) => {
                 state.textContent = e.target.value;
                 localStorage.setItem('stamp_text_content', state.textContent);
                 renderPreview();
             });
 
-            insertCopyrightBtn.addEventListener('click', () => {
-                textInput.value = '© ' + textInput.value.replace(/^©\s*/, '');
-                state.textContent = textInput.value;
-                localStorage.setItem('stamp_text_content', state.textContent);
+            // Smart Dynamic Variable Tokens
+            document.querySelectorAll('.token-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const token = e.currentTarget.getAttribute('data-insert');
+                    insertAtCursor(textInput, token);
+                    state.textContent = textInput.value;
+                    localStorage.setItem('stamp_text_content', state.textContent);
+                    renderPreview();
+                });
+            });
+
+            // Pro Style Preset Buttons
+            document.querySelectorAll('.pro-style-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const styleKey = e.currentTarget.getAttribute('data-style');
+                    applyProStyle(styleKey);
+                });
+            });
+
+            // Custom User Presets Save & Load
+            saveCustomPresetBtn.addEventListener('click', saveCurrentUserPreset);
+            userPresetsSelect.addEventListener('change', (e) => {
+                const presetName = e.target.value;
+                if (presetName) loadSpecificUserPreset(presetName);
+            });
+
+            // Pattern Mode: Single vs Tiled Proof Grid
+            patternSingleBtn.addEventListener('click', () => setPatternMode('single'));
+            patternTileBtn.addEventListener('click', () => setPatternMode('tile'));
+
+            // Rotation Slider & Angle Quick Buttons
+            rotationSlider.addEventListener('input', (e) => {
+                state.textRotation = parseInt(e.target.value);
+                rotationVal.textContent = `${state.textRotation}°`;
+                localStorage.setItem('stamp_text_rotation', state.textRotation);
                 renderPreview();
             });
 
+            document.querySelectorAll('.angle-quick-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const angle = parseInt(e.currentTarget.getAttribute('data-angle'));
+                    state.textRotation = angle;
+                    rotationSlider.value = angle;
+                    rotationVal.textContent = `${angle}°`;
+                    localStorage.setItem('stamp_text_rotation', angle);
+                    renderPreview();
+                });
+            });
+
+            // Typography Dropdowns
             textFontSelect.addEventListener('change', (e) => {
                 state.textFont = e.target.value;
                 localStorage.setItem('stamp_text_font', state.textFont);
@@ -693,23 +1014,100 @@
                 renderPreview();
             });
 
+            textTrackingSelect.addEventListener('change', (e) => {
+                state.textTracking = e.target.value;
+                localStorage.setItem('stamp_text_tracking', state.textTracking);
+                renderPreview();
+            });
+
+            // Text Alignment
+            document.querySelectorAll('.align-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const align = e.currentTarget.getAttribute('data-align');
+                    state.textAlign = align;
+                    localStorage.setItem('stamp_text_align', align);
+                    updateAlignButtons(align);
+                    renderPreview();
+                });
+            });
+
+            // Text Casing Toggle
+            toggleCaseBtn.addEventListener('click', () => {
+                state.textCase = state.textCase === 'uppercase' ? 'normal' : 'uppercase';
+                caseLabel.textContent = state.textCase === 'uppercase' ? 'TT' : 'Aa';
+                localStorage.setItem('stamp_text_case', state.textCase);
+                renderPreview();
+            });
+
+            // Gradient & Solid Fill Buttons
+            document.querySelectorAll('.grad-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const grad = e.currentTarget.getAttribute('data-grad');
+                    if (grad === 'none') {
+                        state.colorType = 'solid';
+                        localStorage.setItem('stamp_color_type', 'solid');
+                        solidSwatchesRow.classList.remove('hidden');
+                    } else {
+                        state.colorType = 'gradient';
+                        state.textGradient = grad;
+                        localStorage.setItem('stamp_color_type', 'gradient');
+                        localStorage.setItem('stamp_text_gradient', grad);
+                        solidSwatchesRow.classList.add('hidden');
+                    }
+                    updateGradientButtons(grad);
+                    renderPreview();
+                });
+            });
+
+            // Text Color Swatches & Custom Picker
             document.querySelectorAll('.color-btn').forEach(btn => {
                 btn.addEventListener('click', (e) => {
                     const color = e.currentTarget.getAttribute('data-color');
                     state.textColor = color;
+                    customColorPicker.value = color.startsWith('#') && color.length === 7 ? color : '#ffffff';
                     localStorage.setItem('stamp_text_color', color);
                     updateColorButtons(color);
                     renderPreview();
                 });
             });
 
-            textBadgeToggle.addEventListener('change', (e) => {
-                state.textBadge = e.target.checked;
-                localStorage.setItem('stamp_text_badge', state.textBadge);
+            customColorPicker.addEventListener('input', (e) => {
+                const color = e.target.value;
+                state.textColor = color;
+                localStorage.setItem('stamp_text_color', color);
+                updateColorButtons(color);
                 renderPreview();
             });
 
-            // Anchor selection buttons
+            // Text Outline Halo Toggle
+            textOutlineToggle.addEventListener('change', (e) => {
+                state.textOutline = e.target.checked;
+                state.textOutlineColor = state.textColor === '#000000' ? '#ffffff' : '#000000';
+                localStorage.setItem('stamp_text_outline', state.textOutline);
+                renderPreview();
+            });
+
+            // Blend Mode & Plate Style Selects
+            blendModeSelect.addEventListener('change', (e) => {
+                state.blendMode = e.target.value;
+                localStorage.setItem('stamp_blend_mode', state.blendMode);
+                renderPreview();
+            });
+
+            textPlateSelect.addEventListener('change', (e) => {
+                state.textPlate = e.target.value;
+                localStorage.setItem('stamp_text_plate', state.textPlate);
+                renderPreview();
+            });
+
+            // Auto-Fit Safe Boundary Toggle
+            textAutoFitToggle.addEventListener('change', (e) => {
+                state.textAutoFit = e.target.checked;
+                localStorage.setItem('stamp_text_autofit', state.textAutoFit);
+                renderPreview();
+            });
+
+            // Anchor Selection Buttons
             document.querySelectorAll('.anchor-btn').forEach(btn => {
                 btn.addEventListener('click', (e) => {
                     const anchor = e.currentTarget.getAttribute('data-anchor');
@@ -792,6 +1190,253 @@
             window.addEventListener('keydown', handleKeyboardShortcuts);
         }
 
+        function insertAtCursor(textarea, text) {
+            const start = textarea.selectionStart;
+            const end = textarea.selectionEnd;
+            const val = textarea.value;
+            textarea.value = val.substring(0, start) + text + val.substring(end);
+            textarea.selectionStart = textarea.selectionEnd = start + text.length;
+            textarea.focus();
+        }
+
+        // --- Pro Style Preset Implementations ---
+        function applyProStyle(styleKey) {
+            switch (styleKey) {
+                case 'luxury':
+                    state.textFont = "'Cinzel', serif";
+                    state.textWeight = '700';
+                    state.textCase = 'uppercase';
+                    state.textTracking = 'ultra';
+                    state.colorType = 'gradient';
+                    state.textGradient = 'gold';
+                    state.anchor = 'bottom-center';
+                    state.customPos = null;
+                    state.textPattern = 'single';
+                    state.textRotation = 0;
+                    state.textContent = '© {year} CREATOR STUDIO';
+                    state.textPlate = 'none';
+                    state.textOutline = false;
+                    state.blendMode = 'source-over';
+                    state.opacity = 95;
+                    state.scale = 16;
+                    break;
+                case 'signature':
+                    state.textFont = "'Caveat', cursive";
+                    state.textWeight = '700';
+                    state.textCase = 'normal';
+                    state.textTracking = 'normal';
+                    state.colorType = 'solid';
+                    state.textColor = '#ffffff';
+                    state.anchor = 'bottom-right';
+                    state.customPos = null;
+                    state.textPattern = 'single';
+                    state.textRotation = 0;
+                    state.textContent = 'Coty Stylez Photography';
+                    state.textPlate = 'none';
+                    state.textOutline = true;
+                    state.blendMode = 'source-over';
+                    state.opacity = 95;
+                    state.scale = 22;
+                    break;
+                case 'proof':
+                    state.textFont = "'Oswald', sans-serif";
+                    state.textWeight = '700';
+                    state.textCase = 'uppercase';
+                    state.textTracking = 'wide';
+                    state.colorType = 'solid';
+                    state.textColor = '#ffffff';
+                    state.textPattern = 'tile';
+                    state.textRotation = -30;
+                    state.textContent = 'PROOF ONLY · DO NOT DISTRIBUTE';
+                    state.textPlate = 'none';
+                    state.textOutline = false;
+                    state.blendMode = 'overlay';
+                    state.opacity = 25;
+                    state.scale = 20;
+                    break;
+                case 'glass':
+                    state.textFont = "'Plus Jakarta Sans', sans-serif";
+                    state.textWeight = '700';
+                    state.textCase = 'normal';
+                    state.textTracking = 'normal';
+                    state.colorType = 'solid';
+                    state.textColor = '#ffffff';
+                    state.anchor = 'bottom-right';
+                    state.customPos = null;
+                    state.textPattern = 'single';
+                    state.textRotation = 0;
+                    state.textContent = '© {year} STUDIO · SHOT ON LEICA';
+                    state.textPlate = 'pill';
+                    state.textOutline = false;
+                    state.blendMode = 'source-over';
+                    state.opacity = 90;
+                    state.scale = 18;
+                    break;
+                case 'film':
+                    state.textFont = "'JetBrains Mono', monospace";
+                    state.textWeight = '600';
+                    state.textCase = 'uppercase';
+                    state.textTracking = 'wide';
+                    state.colorType = 'solid';
+                    state.textColor = '#f59e0b';
+                    state.anchor = 'bottom-left';
+                    state.customPos = null;
+                    state.textPattern = 'single';
+                    state.textRotation = 0;
+                    state.textContent = 'EXP. {date} // {filename}';
+                    state.textPlate = 'box';
+                    state.textOutline = false;
+                    state.blendMode = 'source-over';
+                    state.opacity = 90;
+                    state.scale = 16;
+                    break;
+            }
+
+            syncUIWithState();
+            saveCurrentStateToLocalStorage();
+            renderPreview();
+        }
+
+        function setPatternMode(mode) {
+            state.textPattern = mode;
+            localStorage.setItem('stamp_text_pattern', mode);
+            if (mode === 'single') {
+                patternSingleBtn.classList.add('bg-indigo-600', 'text-white', 'shadow-sm');
+                patternSingleBtn.classList.remove('text-slate-400');
+                patternTileBtn.classList.remove('bg-indigo-600', 'text-white', 'shadow-sm');
+                patternTileBtn.classList.add('text-slate-400');
+                positionCard.classList.remove('opacity-40', 'pointer-events-none');
+                patternStatusBadge.textContent = 'Single Snap';
+            } else {
+                patternTileBtn.classList.add('bg-indigo-600', 'text-white', 'shadow-sm');
+                patternTileBtn.classList.remove('text-slate-400');
+                patternSingleBtn.classList.remove('bg-indigo-600', 'text-white', 'shadow-sm');
+                patternSingleBtn.classList.add('text-slate-400');
+                positionCard.classList.add('opacity-40', 'pointer-events-none');
+                patternStatusBadge.textContent = 'Tiled Proof Grid';
+            }
+            renderPreview();
+        }
+
+        // --- Custom User Preset Management ---
+        function loadUserPresets() {
+            try {
+                const stored = localStorage.getItem('stamp_saved_presets');
+                state.savedPresets = stored ? JSON.parse(stored) : [];
+            } catch {
+                state.savedPresets = [];
+            }
+            refreshPresetsDropdown();
+        }
+
+        function refreshPresetsDropdown() {
+            userPresetsSelect.innerHTML = '<option value="">Saved Looks...</option>';
+            state.savedPresets.forEach(preset => {
+                const opt = document.createElement('option');
+                opt.value = preset.name;
+                opt.textContent = `★ ${preset.name}`;
+                userPresetsSelect.appendChild(opt);
+            });
+        }
+
+        function saveCurrentUserPreset() {
+            const name = prompt('Name this custom watermark style (e.g. "My Wedding Signature"):');
+            if (!name || !name.trim()) return;
+
+            const trimmed = name.trim();
+            const presetData = {
+                name: trimmed,
+                textContent: state.textContent,
+                textFont: state.textFont,
+                textWeight: state.textWeight,
+                colorType: state.colorType,
+                textColor: state.textColor,
+                textGradient: state.textGradient,
+                textAlign: state.textAlign,
+                textCase: state.textCase,
+                textTracking: state.textTracking,
+                textRotation: state.textRotation,
+                textPattern: state.textPattern,
+                blendMode: state.blendMode,
+                textPlate: state.textPlate,
+                textOutline: state.textOutline,
+                anchor: state.anchor,
+                scale: state.scale,
+                opacity: state.opacity,
+                margin: state.margin
+            };
+
+            // Remove if existing name
+            state.savedPresets = state.savedPresets.filter(p => p.name.toLowerCase() !== trimmed.toLowerCase());
+            state.savedPresets.push(presetData);
+            localStorage.setItem('stamp_saved_presets', JSON.stringify(state.savedPresets));
+            refreshPresetsDropdown();
+            userPresetsSelect.value = trimmed;
+        }
+
+        function loadSpecificUserPreset(presetName) {
+            const preset = state.savedPresets.find(p => p.name === presetName);
+            if (!preset) return;
+
+            Object.assign(state, preset);
+            syncUIWithState();
+            saveCurrentStateToLocalStorage();
+            renderPreview();
+        }
+
+        function syncUIWithState() {
+            textInput.value = state.textContent;
+            textFontSelect.value = state.textFont;
+            textStyleSelect.value = state.textWeight;
+            textTrackingSelect.value = state.textTracking;
+            caseLabel.textContent = state.textCase === 'uppercase' ? 'TT' : 'Aa';
+            rotationSlider.value = state.textRotation;
+            rotationVal.textContent = `${state.textRotation}°`;
+            blendModeSelect.value = state.blendMode;
+            textPlateSelect.value = state.textPlate;
+            textOutlineToggle.checked = state.textOutline;
+            customColorPicker.value = state.textColor.startsWith('#') && state.textColor.length === 7 ? state.textColor : '#ffffff';
+            scaleSlider.value = state.scale;
+            scaleVal.textContent = `${state.scale}%`;
+            opacitySlider.value = state.opacity;
+            opacityVal.textContent = `${state.opacity}%`;
+            marginSlider.value = state.margin;
+            marginVal.textContent = `${state.margin}%`;
+
+            updateAlignButtons(state.textAlign);
+            updateColorButtons(state.textColor);
+            updateGradientButtons(state.colorType === 'gradient' ? state.textGradient : 'none');
+            setPatternMode(state.textPattern);
+            updateAnchorUI();
+
+            if (state.colorType === 'solid') {
+                solidSwatchesRow.classList.remove('hidden');
+            } else {
+                solidSwatchesRow.classList.add('hidden');
+            }
+        }
+
+        function saveCurrentStateToLocalStorage() {
+            localStorage.setItem('stamp_text_content', state.textContent);
+            localStorage.setItem('stamp_text_font', state.textFont);
+            localStorage.setItem('stamp_text_weight', state.textWeight);
+            localStorage.setItem('stamp_text_tracking', state.textTracking);
+            localStorage.setItem('stamp_text_case', state.textCase);
+            localStorage.setItem('stamp_text_align', state.textAlign);
+            localStorage.setItem('stamp_color_type', state.colorType);
+            localStorage.setItem('stamp_text_color', state.textColor);
+            localStorage.setItem('stamp_text_gradient', state.textGradient);
+            localStorage.setItem('stamp_text_rotation', state.textRotation);
+            localStorage.setItem('stamp_text_pattern', state.textPattern);
+            localStorage.setItem('stamp_blend_mode', state.blendMode);
+            localStorage.setItem('stamp_text_plate', state.textPlate);
+            localStorage.setItem('stamp_text_outline', state.textOutline);
+            localStorage.setItem('stamp_scale', state.scale);
+            localStorage.setItem('stamp_opacity', state.opacity);
+            localStorage.setItem('stamp_margin', state.margin);
+            localStorage.setItem('stamp_anchor', state.anchor);
+        }
+
         function setWatermarkMode(mode) {
             state.watermarkType = mode;
             localStorage.setItem('stamp_wm_type', mode);
@@ -811,6 +1456,29 @@
                 logoModeContainer.classList.add('hidden');
             }
             renderPreview();
+        }
+
+        function updateAlignButtons(selectedAlign) {
+            document.querySelectorAll('.align-btn').forEach(btn => {
+                if (btn.getAttribute('data-align') === selectedAlign) {
+                    btn.classList.add('bg-indigo-600', 'text-white', 'shadow-sm');
+                    btn.classList.remove('text-slate-400');
+                } else {
+                    btn.classList.remove('bg-indigo-600', 'text-white', 'shadow-sm');
+                    btn.classList.add('text-slate-400');
+                }
+            });
+        }
+
+        function updateGradientButtons(selectedGrad) {
+            document.querySelectorAll('.grad-btn').forEach(btn => {
+                if (btn.getAttribute('data-grad') === selectedGrad) {
+                    btn.classList.add('bg-indigo-600', 'text-white', 'shadow-sm');
+                    btn.classList.remove('hover:text-white');
+                } else {
+                    btn.classList.remove('bg-indigo-600', 'text-white', 'shadow-sm');
+                }
+            });
         }
 
         function updateColorButtons(selectedColor) {
@@ -853,7 +1521,7 @@
         }
 
         function handleKeyboardShortcuts(e) {
-            if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') return;
+            if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT' || e.target.tagName === 'TEXTAREA') return;
 
             if (state.photos.length === 0) return;
 
@@ -867,7 +1535,7 @@
                 state.selectedIndex = (state.selectedIndex - 1 + state.photos.length) % state.photos.length;
                 updateQueueUI();
                 renderPreview();
-            } else if (e.key >= '1' && e.key <= '9') {
+            } else if (e.key >= '1' && e.key <= '9' && state.textPattern === 'single') {
                 const anchors = ['top-left', 'top-center', 'top-right', 'center-left', 'center', 'center-right', 'bottom-left', 'bottom-center', 'bottom-right'];
                 const targetAnchor = anchors[parseInt(e.key) - 1];
                 if (targetAnchor) {
@@ -893,6 +1561,37 @@
             state.logoInvert = false;
             logoInvertToggle.checked = false;
 
+            state.textContent = '© {year} CREATOR STUDIO · ALL RIGHTS RESERVED';
+            textInput.value = state.textContent;
+            state.textFont = "'Plus Jakarta Sans', sans-serif";
+            textFontSelect.value = state.textFont;
+            state.textWeight = '700';
+            textStyleSelect.value = state.textWeight;
+            state.colorType = 'solid';
+            state.textColor = '#ffffff';
+            updateColorButtons('#ffffff');
+            updateGradientButtons('none');
+            solidSwatchesRow.classList.remove('hidden');
+            state.textAlign = 'center';
+            updateAlignButtons('center');
+            state.textCase = 'normal';
+            caseLabel.textContent = 'Aa';
+            state.textTracking = 'normal';
+            textTrackingSelect.value = 'normal';
+            state.textRotation = 0;
+            rotationSlider.value = 0;
+            rotationVal.textContent = '0°';
+            state.textPattern = 'single';
+            setPatternMode('single');
+            state.blendMode = 'source-over';
+            blendModeSelect.value = 'source-over';
+            state.textPlate = 'none';
+            textPlateSelect.value = 'none';
+            state.textOutline = false;
+            textOutlineToggle.checked = false;
+            state.textAutoFit = true;
+            textAutoFitToggle.checked = true;
+
             scaleSlider.value = 18;
             scaleVal.textContent = '18%';
             opacitySlider.value = 90;
@@ -904,6 +1603,7 @@
             coordBadge.textContent = 'Snapped: BR';
 
             updateAnchorUI();
+            saveCurrentStateToLocalStorage();
             renderPreview();
         }
 
@@ -962,7 +1662,7 @@
             if (files.length > 0) {
                 addPhotosToQueue(files);
             }
-            e.target.value = ''; // reset so same files can be re-added
+            e.target.value = '';
         }
 
         function addPhotosToQueue(files) {
@@ -998,7 +1698,6 @@
                 img.src = url;
                 img.className = 'w-full h-full object-cover';
 
-                // Delete individual thumbnail button
                 const delBtn = document.createElement('button');
                 delBtn.className = 'absolute top-0 right-0 p-1 bg-slate-950/80 text-slate-400 hover:text-rose-400 rounded-bl transition opacity-0 group-hover:opacity-100';
                 delBtn.innerHTML = '✕';
@@ -1055,7 +1754,7 @@
 
         function updateAnchorUI() {
             document.querySelectorAll('.anchor-btn').forEach(btn => {
-                if (btn.getAttribute('data-anchor') === state.anchor && !state.customPos) {
+                if (btn.getAttribute('data-anchor') === state.anchor && !state.customPos && state.textPattern === 'single') {
                     btn.classList.add('bg-indigo-600', 'text-white', 'border-indigo-500', 'shadow-md');
                     btn.classList.remove('bg-slate-900', 'text-slate-400');
                 } else {
@@ -1072,7 +1771,6 @@
                 const clientX = e.touches ? e.touches[0].clientX : e.clientX;
                 const clientY = e.touches ? e.touches[0].clientY : e.clientY;
                 
-                // Map CSS client coordinate to canvas internal pixels
                 const scaleX = previewCanvas.width / rect.width;
                 const scaleY = previewCanvas.height / rect.height;
 
@@ -1083,9 +1781,8 @@
             }
 
             function isInsideWatermark(pt) {
-                if (!watermarkBounds) return false;
-                // Add generous 15px hit margin
-                const pad = 15;
+                if (!watermarkBounds || state.textPattern === 'tile') return false;
+                const pad = 24;
                 return (
                     pt.x >= watermarkBounds.x - pad &&
                     pt.x <= watermarkBounds.x + watermarkBounds.width + pad &&
@@ -1096,7 +1793,7 @@
 
             // Mouse / Touch Start
             function onPointerDown(e) {
-                if (state.photos.length === 0 || !watermarkBounds) return;
+                if (state.photos.length === 0 || !watermarkBounds || state.textPattern === 'tile') return;
                 const pt = getCanvasCoordinates(e);
 
                 if (isInsideWatermark(pt)) {
@@ -1116,7 +1813,6 @@
                     const newX = pt.x - dragOffset.x;
                     const newY = pt.y - dragOffset.y;
 
-                    // Compute normalized percentages relative to canvas dimensions
                     const xPercent = Math.max(0, Math.min(1, newX / previewCanvas.width));
                     const yPercent = Math.max(0, Math.min(1, newY / previewCanvas.height));
 
@@ -1166,104 +1862,312 @@
                 ctx.clearRect(0, 0, previewCanvas.width, previewCanvas.height);
                 ctx.drawImage(img, 0, 0);
 
-                watermarkBounds = drawWatermark(ctx, previewCanvas.width, previewCanvas.height);
+                const photoContext = {
+                    file: activeFile,
+                    index: state.selectedIndex + 1,
+                    total: state.photos.length
+                };
+
+                watermarkBounds = drawWatermark(ctx, previewCanvas.width, previewCanvas.height, photoContext);
             };
             img.src = state.photoUrls[state.selectedIndex];
         }
 
+        // Resolve Dynamic Tokens ({year}, {filename}, {index}, {date})
+        function resolveDynamicTokens(rawText, photoFile, index, total) {
+            let content = rawText || '';
+            const currentYear = new Date().getFullYear();
+            const curDate = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+            const rawName = photoFile ? photoFile.name.replace(/\.[^/.]+$/, "") : 'image';
+            
+            content = content.replace(/{year}/gi, currentYear);
+            content = content.replace(/{date}/gi, curDate);
+            content = content.replace(/{filename}/gi, rawName);
+            content = content.replace(/{index}/gi, String(index).padStart(2, '0'));
+            content = content.replace(/{total}/gi, String(total));
+
+            return content;
+        }
+
+        // Auto-Wrapping & Multi-Line Calculation Engine
+        function computeTextLines(targetCtx, text, fontSize, fontFace, fontStyleWeight, letterSpacingVal, maxLineWidthBudget) {
+            targetCtx.save();
+            targetCtx.font = `${fontStyleWeight} ${fontSize}px ${fontFace}`;
+            if (letterSpacingVal && 'letterSpacing' in targetCtx) {
+                targetCtx.letterSpacing = letterSpacingVal;
+            }
+
+            const rawParagraphs = (text || '').split('\n');
+            const lines = [];
+
+            for (let p = 0; p < rawParagraphs.length; p++) {
+                const paragraph = rawParagraphs[p];
+                if (!paragraph.trim()) {
+                    lines.push('');
+                    continue;
+                }
+
+                const words = paragraph.split(' ');
+                let currentLine = '';
+
+                for (let i = 0; i < words.length; i++) {
+                    const word = words[i];
+                    const testLine = currentLine ? currentLine + ' ' + word : word;
+                    const w = targetCtx.measureText(testLine).width;
+
+                    if (w > maxLineWidthBudget && currentLine) {
+                        lines.push(currentLine);
+                        currentLine = word;
+                    } else {
+                        currentLine = testLine;
+                    }
+                }
+                if (currentLine) {
+                    lines.push(currentLine);
+                }
+            }
+
+            if (lines.length === 0) lines.push('');
+
+            let maxLineWidth = 0;
+            for (const line of lines) {
+                const lw = targetCtx.measureText(line || ' ').width;
+                if (lw > maxLineWidth) maxLineWidth = lw;
+            }
+
+            const lineHeight = fontSize * 1.35;
+            const totalTextHeight = lines.length * lineHeight;
+
+            targetCtx.restore();
+
+            return {
+                lines,
+                maxLineWidth,
+                lineHeight,
+                totalTextHeight
+            };
+        }
+
+        // Single Badge Drawing Subroutine
+        function drawSingleTextBadge(targetCtx, x, y, boxW, boxH, textRenderData) {
+            const { lines, lineHeight, fontSize, padX, padY, letterSpacingVal, fontStyleStr } = textRenderData;
+
+            // 1. Draw Plate
+            if (state.textPlate !== 'none') {
+                targetCtx.save();
+                if (state.textPlate === 'pill') {
+                    targetCtx.fillStyle = 'rgba(15, 23, 42, 0.78)';
+                    const radius = boxH / 2;
+                    targetCtx.beginPath();
+                    targetCtx.roundRect(x, y, boxW, boxH, radius);
+                    targetCtx.fill();
+                } else if (state.textPlate === 'box') {
+                    targetCtx.fillStyle = 'rgba(15, 23, 42, 0.85)';
+                    const radius = Math.min(10, fontSize * 0.35);
+                    targetCtx.beginPath();
+                    targetCtx.roundRect(x, y, boxW, boxH, radius);
+                    targetCtx.fill();
+                } else if (state.textPlate === 'glass') {
+                    targetCtx.fillStyle = 'rgba(255, 255, 255, 0.16)';
+                    const radius = Math.min(8, fontSize * 0.3);
+                    targetCtx.beginPath();
+                    targetCtx.roundRect(x, y, boxW, boxH, radius);
+                    targetCtx.fill();
+                    targetCtx.strokeStyle = 'rgba(255, 255, 255, 0.35)';
+                    targetCtx.lineWidth = Math.max(1, fontSize * 0.04);
+                    targetCtx.stroke();
+                } else if (state.textPlate === 'neon') {
+                    targetCtx.fillStyle = 'rgba(15, 23, 42, 0.9)';
+                    const radius = Math.min(8, fontSize * 0.3);
+                    targetCtx.beginPath();
+                    targetCtx.roundRect(x, y, boxW, boxH, radius);
+                    targetCtx.fill();
+                    targetCtx.strokeStyle = state.textColor;
+                    targetCtx.lineWidth = Math.max(1.5, fontSize * 0.06);
+                    targetCtx.shadowColor = state.textColor;
+                    targetCtx.shadowBlur = 8;
+                    targetCtx.stroke();
+                }
+                targetCtx.restore();
+            }
+
+            // 2. Setup Typography & Fill Style
+            targetCtx.font = `${fontStyleStr} ${fontSize}px ${state.textFont}`;
+            if ('letterSpacing' in targetCtx) {
+                targetCtx.letterSpacing = letterSpacingVal;
+            }
+            targetCtx.textBaseline = 'middle';
+
+            let textAnchorX = x + padX;
+            let alignMode = 'left';
+            if (state.textAlign === 'center') {
+                textAnchorX = x + boxW / 2;
+                alignMode = 'center';
+            } else if (state.textAlign === 'right') {
+                textAnchorX = x + boxW - padX;
+                alignMode = 'right';
+            }
+            targetCtx.textAlign = alignMode;
+
+            // Fill style (Solid or Metallic Gradient)
+            if (state.colorType === 'gradient') {
+                const grad = targetCtx.createLinearGradient(x, y, x + boxW, y + boxH);
+                if (state.textGradient === 'gold') {
+                    grad.addColorStop(0, '#FEF08A');
+                    grad.addColorStop(0.3, '#F59E0B');
+                    grad.addColorStop(0.7, '#D97706');
+                    grad.addColorStop(1, '#92400E');
+                } else if (state.textGradient === 'silver') {
+                    grad.addColorStop(0, '#FFFFFF');
+                    grad.addColorStop(0.35, '#CBD5E1');
+                    grad.addColorStop(0.7, '#94A3B8');
+                    grad.addColorStop(1, '#64748B');
+                } else if (state.textGradient === 'rose') {
+                    grad.addColorStop(0, '#FFF1F2');
+                    grad.addColorStop(0.4, '#FB7185');
+                    grad.addColorStop(0.8, '#E11D48');
+                    grad.addColorStop(1, '#9F1239');
+                } else if (state.textGradient === 'sunset') {
+                    grad.addColorStop(0, '#FB7185');
+                    grad.addColorStop(0.5, '#C084FC');
+                    grad.addColorStop(1, '#6366F1');
+                }
+                targetCtx.fillStyle = grad;
+            } else {
+                targetCtx.fillStyle = state.textColor;
+            }
+
+            // Shadow
+            if (state.dropShadow) {
+                targetCtx.shadowColor = 'rgba(0, 0, 0, 0.85)';
+                targetCtx.shadowBlur = Math.max(4, fontSize * 0.18);
+                targetCtx.shadowOffsetX = Math.max(1.5, fontSize * 0.04);
+                targetCtx.shadowOffsetY = Math.max(1.5, fontSize * 0.04);
+            } else {
+                targetCtx.shadowColor = 'transparent';
+                targetCtx.shadowBlur = 0;
+                targetCtx.shadowOffsetX = 0;
+                targetCtx.shadowOffsetY = 0;
+            }
+
+            const startY = y + padY + lineHeight / 2;
+
+            for (let i = 0; i < lines.length; i++) {
+                const line = lines[i];
+                if (!line) continue;
+                const curY = startY + i * lineHeight;
+
+                // Outline Halo
+                if (state.textOutline) {
+                    targetCtx.save();
+                    targetCtx.strokeStyle = state.textOutlineColor || '#000000';
+                    targetCtx.lineWidth = Math.max(2.5, fontSize * 0.12);
+                    targetCtx.lineJoin = 'round';
+                    targetCtx.miterLimit = 2;
+                    targetCtx.strokeText(line, textAnchorX, curY);
+                    targetCtx.restore();
+                }
+
+                targetCtx.fillText(line, textAnchorX, curY);
+            }
+        }
+
+        // Tiled Grid Engine (Repeating Proof Watermark Pattern)
+        function drawTiledWatermark(targetCtx, w, h, textRenderData) {
+            targetCtx.save();
+            targetCtx.globalAlpha = state.opacity / 100;
+            targetCtx.globalCompositeOperation = state.blendMode;
+
+            const angleRad = (state.textRotation * Math.PI) / 180;
+            const { padX, padY } = textRenderData;
+            const boxW = textRenderData.maxLineWidth + 2 * padX;
+            const boxH = textRenderData.totalTextHeight + 2 * padY;
+
+            targetCtx.translate(w / 2, h / 2);
+            targetCtx.rotate(angleRad);
+
+            const stepX = Math.max(100, boxW * (state.tileDensity * 0.9));
+            const stepY = Math.max(60, boxH * (state.tileDensity * 1.15));
+
+            const diag = Math.sqrt(w * w + h * h);
+            const startX = -diag;
+            const endX = diag;
+            const startY = -diag;
+            const endY = diag;
+
+            let rowIndex = 0;
+            for (let curY = startY; curY <= endY; curY += stepY) {
+                rowIndex++;
+                const offsetX = (rowIndex % 2 === 0) ? stepX / 2 : 0;
+                for (let curX = startX + offsetX; curX <= endX; curX += stepX) {
+                    drawSingleTextBadge(targetCtx, curX - boxW / 2, curY - boxH / 2, boxW, boxH, textRenderData);
+                }
+            }
+
+            targetCtx.restore();
+        }
+
         // High-Precision Watermark Geometry & Render Engine
-        function drawWatermark(targetCtx, w, h) {
+        function drawWatermark(targetCtx, w, h, photoContext = {}) {
             targetCtx.save();
 
             let targetW = 0;
             let targetH = 0;
+            let textRenderData = null;
 
-            // Step 1: Calculate dimensions
+            // Safe Margins
+            const edgeMargin = Math.max(12, w * (state.margin / 100));
+            const maxAllowedW = Math.max(40, w - 2 * edgeMargin);
+            const maxAllowedH = Math.max(30, h - 2 * edgeMargin);
+
+            // LOGO WATERMARK MODE
             if (state.watermarkType === 'logo') {
                 if (!state.logoImage) {
                     targetCtx.restore();
                     return null;
                 }
                 const logoAspect = state.logoImage.width / state.logoImage.height;
-                targetW = w * (state.scale / 100);
+                targetW = Math.min(maxAllowedW, w * (state.scale / 100));
                 targetH = targetW / logoAspect;
-            } else {
-                // Text mode geometry
-                const fontSize = Math.max(16, (w * (state.scale / 100)) * 0.28);
-                const fontStyleStr = state.textWeight === 'italic' ? 'italic' : `${state.textWeight}`;
-                targetCtx.font = `${fontStyleStr} ${fontSize}px ${state.textFont}`;
-                
-                const metrics = targetCtx.measureText(state.textContent || ' ');
-                const textWidth = metrics.width;
-                const textHeight = fontSize * 1.2;
-                
-                targetW = state.textBadge ? textWidth + fontSize * 1.2 : textWidth;
-                targetH = state.textBadge ? textHeight + fontSize * 0.4 : textHeight;
-            }
-
-            // Step 2: Calculate position (Snap or Custom Freeform)
-            const edgeMargin = Math.max(12, w * (state.margin / 100));
-            let x = edgeMargin;
-            let y = edgeMargin;
-
-            if (state.customPos) {
-                x = state.customPos.xPercent * w;
-                y = state.customPos.yPercent * h;
-            } else {
-                switch (state.anchor) {
-                    case 'top-left':
-                        x = edgeMargin;
-                        y = edgeMargin;
-                        break;
-                    case 'top-center':
-                        x = (w - targetW) / 2;
-                        y = edgeMargin;
-                        break;
-                    case 'top-right':
-                        x = w - targetW - edgeMargin;
-                        y = edgeMargin;
-                        break;
-                    case 'center-left':
-                        x = edgeMargin;
-                        y = (h - targetH) / 2;
-                        break;
-                    case 'center':
-                        x = (w - targetW) / 2;
-                        y = (h - targetH) / 2;
-                        break;
-                    case 'center-right':
-                        x = w - targetW - edgeMargin;
-                        y = (h - targetH) / 2;
-                        break;
-                    case 'bottom-left':
-                        x = edgeMargin;
-                        y = h - targetH - edgeMargin;
-                        break;
-                    case 'bottom-center':
-                        x = (w - targetW) / 2;
-                        y = h - targetH - edgeMargin;
-                        break;
-                    case 'bottom-right':
-                    default:
-                        x = w - targetW - edgeMargin;
-                        y = h - targetH - edgeMargin;
-                        break;
+                if (targetH > maxAllowedH) {
+                    targetH = maxAllowedH;
+                    targetW = targetH * logoAspect;
                 }
-            }
 
-            // Step 3: Draw Watermark Content
-            targetCtx.globalAlpha = state.opacity / 100;
+                let x = edgeMargin;
+                let y = edgeMargin;
 
-            if (state.dropShadow) {
-                targetCtx.shadowColor = 'rgba(0, 0, 0, 0.75)';
-                targetCtx.shadowBlur = Math.max(4, targetW * 0.04);
-                targetCtx.shadowOffsetX = Math.max(2, targetW * 0.015);
-                targetCtx.shadowOffsetY = Math.max(2, targetW * 0.015);
-            }
+                if (state.customPos) {
+                    x = state.customPos.xPercent * w;
+                    y = state.customPos.yPercent * h;
+                    x = Math.max(edgeMargin, Math.min(w - targetW - edgeMargin, x));
+                    y = Math.max(edgeMargin, Math.min(h - targetH - edgeMargin, y));
+                } else {
+                    switch (state.anchor) {
+                        case 'top-left': x = edgeMargin; y = edgeMargin; break;
+                        case 'top-center': x = Math.max(edgeMargin, (w - targetW) / 2); y = edgeMargin; break;
+                        case 'top-right': x = Math.max(edgeMargin, w - targetW - edgeMargin); y = edgeMargin; break;
+                        case 'center-left': x = edgeMargin; y = Math.max(edgeMargin, (h - targetH) / 2); break;
+                        case 'center': x = Math.max(edgeMargin, (w - targetW) / 2); y = Math.max(edgeMargin, (h - targetH) / 2); break;
+                        case 'center-right': x = Math.max(edgeMargin, w - targetW - edgeMargin); y = Math.max(edgeMargin, (h - targetH) / 2); break;
+                        case 'bottom-left': x = edgeMargin; y = Math.max(edgeMargin, h - targetH - edgeMargin); break;
+                        case 'bottom-center': x = Math.max(edgeMargin, (w - targetW) / 2); y = Math.max(edgeMargin, h - targetH - edgeMargin); break;
+                        case 'bottom-right':
+                        default: x = Math.max(edgeMargin, w - targetW - edgeMargin); y = Math.max(edgeMargin, h - targetH - edgeMargin); break;
+                    }
+                }
 
-            if (state.watermarkType === 'logo') {
+                targetCtx.globalAlpha = state.opacity / 100;
+                targetCtx.globalCompositeOperation = state.blendMode;
+
+                if (state.dropShadow) {
+                    targetCtx.shadowColor = 'rgba(0, 0, 0, 0.85)';
+                    targetCtx.shadowBlur = Math.max(4, targetW * 0.03);
+                    targetCtx.shadowOffsetX = Math.max(2, targetW * 0.012);
+                    targetCtx.shadowOffsetY = Math.max(2, targetW * 0.012);
+                }
+
                 if (state.logoInvert) {
-                    // Create offscreen white knockout
                     const offCanvas = document.createElement('canvas');
                     offCanvas.width = state.logoImage.width;
                     offCanvas.height = state.logoImage.height;
@@ -1278,42 +2182,111 @@
                 } else {
                     targetCtx.drawImage(state.logoImage, x, y, targetW, targetH);
                 }
-            } else {
-                // Text render
-                const fontSize = Math.max(16, (w * (state.scale / 100)) * 0.28);
-                const fontStyleStr = state.textWeight === 'italic' ? 'italic' : `${state.textWeight}`;
-                targetCtx.font = `${fontStyleStr} ${fontSize}px ${state.textFont}`;
-                targetCtx.textBaseline = 'middle';
 
-                if (state.textBadge) {
-                    // Draw rounded pill container
-                    targetCtx.save();
-                    targetCtx.fillStyle = 'rgba(15, 23, 42, 0.65)';
-                    const radius = targetH / 2;
-                    targetCtx.beginPath();
-                    targetCtx.roundRect(x, y, targetW, targetH, radius);
-                    targetCtx.fill();
-                    targetCtx.restore();
+                targetCtx.restore();
 
-                    targetCtx.fillStyle = state.textColor;
-                    targetCtx.textAlign = 'center';
-                    targetCtx.fillText(state.textContent || '', x + targetW / 2, y + targetH / 2);
-                } else {
-                    targetCtx.fillStyle = state.textColor;
-                    targetCtx.textAlign = 'left';
-                    targetCtx.fillText(state.textContent || '', x, y + targetH / 2);
+                return {
+                    x, y, width: targetW, height: targetH, canvasW: w, canvasH: h
+                };
+            }
+
+            // TEXT WATERMARK MODE (State of the Art)
+            const activeFile = photoContext.file || (state.photos[state.selectedIndex] || null);
+            const rawResolved = resolveDynamicTokens(state.textContent, activeFile, photoContext.index || 1, photoContext.total || 1);
+            let content = rawResolved;
+            if (state.textCase === 'uppercase') {
+                content = content.toUpperCase();
+            }
+
+            let fontSize = Math.max(12, (w * (state.scale / 100)) * 0.28);
+            const fontStyleStr = state.textWeight === 'italic' ? 'italic' : `${state.textWeight}`;
+            
+            let letterSpacingVal = '0px';
+            if (state.textTracking === 'wide') letterSpacingVal = `${Math.max(1, fontSize * 0.08)}px`;
+            else if (state.textTracking === 'ultra') letterSpacingVal = `${Math.max(2, fontSize * 0.18)}px`;
+
+            const hasPlate = state.textPlate !== 'none';
+            const padX = hasPlate ? Math.max(12, fontSize * 0.8) : 0;
+            const padY = hasPlate ? Math.max(6, fontSize * 0.45) : 0;
+            const textMaxW = Math.max(30, maxAllowedW - 2 * padX);
+
+            textRenderData = computeTextLines(targetCtx, content, fontSize, state.textFont, fontStyleStr, letterSpacingVal, textMaxW);
+
+            // Smart Auto-Fit scaling for single mode
+            if (state.textAutoFit && state.textPattern === 'single') {
+                let attempts = 0;
+                while ((textRenderData.totalTextHeight + 2 * padY > maxAllowedH || textRenderData.maxLineWidth > textMaxW) && fontSize > 10 && attempts < 12) {
+                    attempts++;
+                    const ratio = Math.min(
+                        textMaxW / Math.max(1, textRenderData.maxLineWidth),
+                        (maxAllowedH - 2 * padY) / Math.max(1, textRenderData.totalTextHeight)
+                    );
+                    fontSize = Math.max(10, Math.floor(fontSize * Math.min(0.92, ratio)));
+                    
+                    if (state.textTracking === 'wide') letterSpacingVal = `${Math.max(1, fontSize * 0.08)}px`;
+                    else if (state.textTracking === 'ultra') letterSpacingVal = `${Math.max(2, fontSize * 0.18)}px`;
+                    
+                    textRenderData = computeTextLines(targetCtx, content, fontSize, state.textFont, fontStyleStr, letterSpacingVal, textMaxW);
                 }
             }
+
+            targetW = Math.min(maxAllowedW, textRenderData.maxLineWidth + 2 * padX);
+            targetH = Math.min(maxAllowedH, textRenderData.totalTextHeight + 2 * padY);
+            textRenderData.fontSize = fontSize;
+            textRenderData.padX = padX;
+            textRenderData.padY = padY;
+            textRenderData.letterSpacingVal = letterSpacingVal;
+            textRenderData.fontStyleStr = fontStyleStr;
+
+            // Branch: Tiled Pattern Grid vs Single Placement
+            if (state.textPattern === 'tile') {
+                drawTiledWatermark(targetCtx, w, h, textRenderData);
+                targetCtx.restore();
+                return null; // Freeform dragging disabled in tile mode
+            }
+
+            // Single Anchor or Custom Drag Position
+            let x = edgeMargin;
+            let y = edgeMargin;
+
+            if (state.customPos) {
+                x = state.customPos.xPercent * w;
+                y = state.customPos.yPercent * h;
+                x = Math.max(edgeMargin, Math.min(w - targetW - edgeMargin, x));
+                y = Math.max(edgeMargin, Math.min(h - targetH - edgeMargin, y));
+            } else {
+                switch (state.anchor) {
+                    case 'top-left': x = edgeMargin; y = edgeMargin; break;
+                    case 'top-center': x = Math.max(edgeMargin, (w - targetW) / 2); y = edgeMargin; break;
+                    case 'top-right': x = Math.max(edgeMargin, w - targetW - edgeMargin); y = edgeMargin; break;
+                    case 'center-left': x = edgeMargin; y = Math.max(edgeMargin, (h - targetH) / 2); break;
+                    case 'center': x = Math.max(edgeMargin, (w - targetW) / 2); y = Math.max(edgeMargin, (h - targetH) / 2); break;
+                    case 'center-right': x = Math.max(edgeMargin, w - targetW - edgeMargin); y = Math.max(edgeMargin, (h - targetH) / 2); break;
+                    case 'bottom-left': x = edgeMargin; y = Math.max(edgeMargin, h - targetH - edgeMargin); break;
+                    case 'bottom-center': x = Math.max(edgeMargin, (w - targetW) / 2); y = Math.max(edgeMargin, h - targetH - edgeMargin); break;
+                    case 'bottom-right':
+                    default: x = Math.max(edgeMargin, w - targetW - edgeMargin); y = Math.max(edgeMargin, h - targetH - edgeMargin); break;
+                }
+            }
+
+            targetCtx.globalAlpha = state.opacity / 100;
+            targetCtx.globalCompositeOperation = state.blendMode;
+
+            // Apply rotation around watermark center if rotated
+            if (state.textRotation !== 0) {
+                const centerX = x + targetW / 2;
+                const centerY = y + targetH / 2;
+                targetCtx.translate(centerX, centerY);
+                targetCtx.rotate((state.textRotation * Math.PI) / 180);
+                targetCtx.translate(-centerX, -centerY);
+            }
+
+            drawSingleTextBadge(targetCtx, x, y, targetW, targetH, textRenderData);
 
             targetCtx.restore();
 
             return {
-                x,
-                y,
-                width: targetW,
-                height: targetH,
-                canvasW: w,
-                canvasH: h
+                x, y, width: targetW, height: targetH, canvasW: w, canvasH: h
             };
         }
 
@@ -1328,22 +2301,18 @@
             const zip = new JSZip();
 
             for (let i = 0; i < total; i++) {
-                // Update Progress Modal
                 const percent = Math.round(((i + 1) / total) * 100);
                 progressStatusText.textContent = `Processing image ${i + 1} of ${total} (${percent}%)...`;
                 progressBarFill.style.width = `${percent}%`;
 
-                // Yield to event loop for smooth UI animation
                 await new Promise(r => requestAnimationFrame(r));
 
-                const blob = await renderWatermarkedBlob(state.photoUrls[i]);
+                const blob = await renderWatermarkedBlob(state.photos[i], state.photoUrls[i], i + 1, total);
                 const originalName = state.photos[i].name.replace(/\.[^/.]+$/, "");
                 
-                // Formulate filename based on pattern
                 const ext = state.exportFormat === 'image/jpeg' ? 'jpg' : (state.exportFormat === 'image/webp' ? 'webp' : 'png');
                 const outName = state.namingPattern.replace('{name}', originalName) + `.${ext}`;
 
-                // If only 1 image, directly trigger download
                 if (total === 1) {
                     const a = document.createElement('a');
                     a.href = URL.createObjectURL(blob);
@@ -1373,7 +2342,7 @@
             exportZipBtn.disabled = false;
         }
 
-        function renderWatermarkedBlob(url) {
+        function renderWatermarkedBlob(file, url, index, total) {
             return new Promise((resolve) => {
                 const img = new Image();
                 img.onload = () => {
@@ -1383,7 +2352,8 @@
                     const c = canvas.getContext('2d');
 
                     c.drawImage(img, 0, 0);
-                    drawWatermark(c, img.width, img.height);
+                    const photoContext = { file, index, total };
+                    drawWatermark(c, img.width, img.height, photoContext);
 
                     canvas.toBlob((blob) => {
                         resolve(blob);
